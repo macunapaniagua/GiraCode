@@ -9,30 +9,33 @@ package Code;
  *
  * @author Mario A
  */
-public class NodoDoble {
+public class NodoDoble extends NodoSimple{
 
     private NodoDoble anterior;
-    private NodoDoble siguiente;
     
-    public NodoDoble(){
+    /**
+     * Método Constructor
+     * @param pClave dato que contiene el nodo doble
+     */
+    public NodoDoble(String pClave){
+        super(pClave);
         anterior = null;
-        siguiente = null;
     }
 
+    /**
+     * Método utilizado para obtener el nodo anterior
+     * @return Nodo anterior del actual
+     */
     public NodoDoble getAnterior() {
         return anterior;
     }
 
+    /**
+     * Método utilizado para establecer el nodo anterior
+     * @param pAnterior nodo anterior.
+     */
     public void setAnterior(NodoDoble pAnterior) {
         this.anterior = pAnterior;
     }
-
-    public NodoDoble getSiguiente() {
-        return siguiente;
-    }
-
-    public void setSiguiente(NodoDoble pSiguiente) {
-        this.siguiente = pSiguiente;
-    }         
     
 }

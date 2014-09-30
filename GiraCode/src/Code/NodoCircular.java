@@ -11,32 +11,38 @@ package Code;
  */
 public class NodoCircular extends NodoDoble {
     
-    private String clave;
     private String valor;
 
+    /**
+     * Método Constructor
+     * @param pClave palabra reservada del lenguaje GiraCode
+     * @param pValor significado de la palabra reservada en lenguaje Java
+     */
     public NodoCircular(String pClave, String pValor) {
-        super();
-        this.clave = pClave;
+        super(pClave);
         this.valor = pValor;
     }
 
-    public String getClave() {
-        return clave;
-    }
-
-    public void setClave(String pClave) {
-        this.clave = pClave;
-    }
-
+    /**
+     * Método utilizado para obtener el significado de la palabra reservada, en 
+     * el lenguaje Java
+     * @return palabra reservada Java 
+     */
     public String getValor() {
         return valor;
     }
 
+    /** 
+     * Método utilizado para establecer el significado de la palabra reservada,
+     * en el lenguaje Java
+     * @param pValor valor Java de la palabra reservada
+     */
     public void setValor(String pValor) {
         this.valor = pValor;
     }
-    
-    
-    
-    
+
+    @Override
+    public String toString() {
+        return "NodoCircular{ Clave = " + getClave() + ", Valor = " + valor + '}';
+    }       
 }
