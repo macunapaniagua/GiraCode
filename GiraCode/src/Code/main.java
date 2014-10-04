@@ -12,6 +12,8 @@ import GUI.IDE;
  * @author Mario A
  */
 public class main {
+    
+    public static ListaCircular palabrasReservadas;
 
     /**
      * @param args the command line arguments
@@ -19,51 +21,61 @@ public class main {
     public static void main(String[] args) {
         
         // SE CREA LA LISTA CIRCULAR
-        ListaCircular listaCircular = new ListaCircular();
+        palabrasReservadas = new ListaCircular();
         
         //******************* INSERCION DE PALABRAS RESERVADAS *****************
-        listaCircular.imprimirListaCircular();
-        listaCircular.insertar("Texto", "String");
-        listaCircular.insertar("entero", "int");
-        listaCircular.insertar("decimal", "double");
-        listaCircular.insertar("caracter", "char");
-        listaCircular.insertar("binario", "boolean");
-        listaCircular.insertar("!", ";");
-        listaCircular.insertar("programa", "class");
-        listaCircular.insertar("#programa", "");
-        listaCircular.insertar("imprimirln", "System.out.println");
-        listaCircular.insertar("imprimir", "System.out.print");
-        listaCircular.insertar("mientras", "while");        
-        listaCircular.insertar("#mientras", "");
-        listaCircular.insertar("para", "for");
-        listaCircular.insertar("#para", "");
-        listaCircular.insertar("si", "if");
-        listaCircular.insertar("osi", "else if");
-        listaCircular.insertar("sino", "else");
-        listaCircular.insertar("#si", "");
-        listaCircular.insertar("repita", "do");
-        listaCircular.insertar("cuando", "while");
-        listaCircular.insertar("#repita", "");
-        listaCircular.insertar("<", "(");
-        listaCircular.insertar(">", ")");
-        listaCircular.insertar("$", "");
-        listaCircular.insertar("::", "");
-        listaCircular.insertar("o", "||");
-        listaCircular.insertar("y", "&&");
-        listaCircular.insertar("no", "!");
-        listaCircular.insertar("=", "==");
-        listaCircular.insertar("<>", "!=");
-        listaCircular.imprimirListaCircular();
+        palabrasReservadas.imprimirListaCircular();
+        palabrasReservadas.insertar("Texto", "String");
+        palabrasReservadas.insertar("entero", "int");
+        palabrasReservadas.insertar("decimal", "double");
+        palabrasReservadas.insertar("caracter", "char");
+        palabrasReservadas.insertar("binario", "boolean");
+        palabrasReservadas.insertar("!", ";");
+        palabrasReservadas.insertar("programa", "class");
+        palabrasReservadas.insertar("#programa", "");
+        palabrasReservadas.insertar("imprimirln", "System.out.println");
+        palabrasReservadas.insertar("imprimir", "System.out.print");
+        palabrasReservadas.insertar("mientras", "while");        
+        palabrasReservadas.insertar("#mientras", "");
+        palabrasReservadas.insertar("para", "for");
+        palabrasReservadas.insertar("#para", "");
+        palabrasReservadas.insertar("si", "if");
+        palabrasReservadas.insertar("osi", "else if");
+        palabrasReservadas.insertar("sino", "else");
+        palabrasReservadas.insertar("#si", "");
+        palabrasReservadas.insertar("repita", "do");
+        palabrasReservadas.insertar("cuando", "while");
+        palabrasReservadas.insertar("#repita", "");
+        palabrasReservadas.insertar("<", "(");
+        palabrasReservadas.insertar(">", ")");
+        palabrasReservadas.insertar("$", "");
+        palabrasReservadas.insertar("::", "");
+        
+        // Operadores binarios
+        palabrasReservadas.insertar("no", "!");
+        
+        palabrasReservadas.insertar("o", "||");
+        palabrasReservadas.insertar("y", "&&");
+        palabrasReservadas.insertar("=", "==");
+        palabrasReservadas.insertar("<>", "!=");
+        palabrasReservadas.insertar("<", "<");
+        palabrasReservadas.insertar(">", ">");
+        palabrasReservadas.insertar("<=", "<=");
+        palabrasReservadas.insertar(">=", ">=");
+        
+        palabrasReservadas.insertar("verdad", "true");
+        palabrasReservadas.insertar("falso", "false");
+        palabrasReservadas.imprimirListaCircular();
         //**********************************************************************
         
-        System.out.println("Palabra mientras: " + listaCircular.esPalabraReservada("mientras"));
-        System.out.println(listaCircular.getPalabraReservadaJava("mientras"));
-        System.out.println("Palabra repita: " + listaCircular.esPalabraReservada("repita"));
-        System.out.println(listaCircular.getPalabraReservadaJava("repita"));
+        System.out.println("Palabra mientras: " + palabrasReservadas.esPalabraReservada("mientras"));
+        System.out.println(palabrasReservadas.getPalabraReservadaJava("mientras"));
+        System.out.println("Palabra repita: " + palabrasReservadas.esPalabraReservada("repita"));
+        System.out.println(palabrasReservadas.getPalabraReservadaJava("repita"));
         
         
-//        IDE ventana = new IDE();
-//        ventana.setVisible(true);
+        IDE ventana = new IDE();
+        ventana.setVisible(true);
     }
 
 }

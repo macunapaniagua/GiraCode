@@ -15,11 +15,11 @@ public class NodoCircular extends NodoDoble {
 
     /**
      * Método Constructor
-     * @param pClave palabra reservada del lenguaje GiraCode
+     * @param pPalabraReservada palabra reservada del lenguaje GiraCode
      * @param pValor significado de la palabra reservada en lenguaje Java
      */
-    public NodoCircular(String pClave, String pValor) {
-        super(pClave);
+    public NodoCircular(String pPalabraReservada, String pValor) {
+        super(pPalabraReservada);
         this.valor = pValor;
     }
 

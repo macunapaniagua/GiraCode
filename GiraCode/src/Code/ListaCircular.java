@@ -41,11 +41,11 @@ public class ListaCircular {
     /**
      * Metodo utilizado para insertar un elemento a la lista circular
      *
-     * @param pClave clave del nodo nuevo
-     * @param pValor valor del nodo nuevo
+     * @param pPalabraReservada palabra reservada en el lenguaje GiraCODE
+     * @param pValor equivalencia en Java de la palabra reservada
      */
-    public void insertar(String pClave, String pValor) {
-        NodoCircular pNuevoNodo = new NodoCircular(pClave, pValor);
+    public void insertar(String pPalabraReservada, String pValor) {
+        NodoCircular pNuevoNodo = new NodoCircular(pPalabraReservada, pValor);
         insertar(pNuevoNodo);
     }
 
