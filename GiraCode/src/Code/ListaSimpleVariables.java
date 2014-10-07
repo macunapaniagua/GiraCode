@@ -68,7 +68,7 @@ public class ListaSimpleVariables {
      * @param pNombre Nombre de la variable a buscar
      * @return true si la variable existe o false en caso contrario
      */
-    private boolean existeVariable(String pNombre) {
+    public boolean existeVariable(String pNombre) {
         if (raiz != null) {
             NodoVariable recorrido = raiz;
             while (!recorrido.getClave().equals(pNombre) && recorrido.getSiguiente() != null) {

@@ -37,5 +37,10 @@ public class NodoDoble extends NodoSimple{
     public void setAnterior(NodoDoble pAnterior) {
         this.anterior = pAnterior;
     }
+
+    @Override
+    public String toString() {
+        return "NodoDoble{" + "Dato=" + this.getClave() + '}';
+    }
     
 }

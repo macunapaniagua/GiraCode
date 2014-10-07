@@ -9,7 +9,7 @@ package Code;
  *
  * @author Mario A
  */
-public class NodoCircular extends NodoDoble {
+public class NodoPalabraReservada extends NodoDoble{
     
     private String valor;
 
@@ -18,7 +18,7 @@ public class NodoCircular extends NodoDoble {
      * @param pPalabraReservada palabra reservada del lenguaje GiraCode
      * @param pValor significado de la palabra reservada en lenguaje Java
      */
-    public NodoCircular(String pPalabraReservada, String pValor) {
+    public NodoPalabraReservada(String pPalabraReservada, String pValor) {
         super(pPalabraReservada);
         this.valor = pValor;
     }
@@ -43,6 +43,7 @@ public class NodoCircular extends NodoDoble {
 
     @Override
     public String toString() {
-        return "NodoCircular{ Clave = " + getClave() + ", Valor = " + valor + '}';
-    }       
+        return "PalabraReservada{ Clave = " + this.getClave() + ", Valor = " + valor + '}';
+    }
+    
 }

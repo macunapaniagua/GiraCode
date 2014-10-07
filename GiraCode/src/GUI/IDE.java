@@ -5,8 +5,12 @@
  */
 package GUI;
 
+import Code.SyntaxChecker;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -21,14 +25,15 @@ public class IDE extends javax.swing.JFrame {
 
     // Formato para las palabras reservadas
     Style styleReservada;
-    
+    Style styleCodigoOK;
+
     /**
      * Creates new form IDE
      */
     public IDE() {
         initComponents();
         this.setLocationRelativeTo(null);
-        
+
         // Establece el formato para las palabras reservadas (color azul)
         styleReservada = Txt_Editor.addStyle("Palabra reservada", null);
         StyleConstants.setForeground(styleReservada, Color.BLUE);
@@ -45,10 +50,10 @@ public class IDE extends javax.swing.JFrame {
     private void initComponents() {
 
         Panel_Superior = new javax.swing.JPanel();
-        Lbl_Compilar = new javax.swing.JLabel();
+        Lbl_Cargar = new javax.swing.JLabel();
         Lbl_Ejecutar = new javax.swing.JLabel();
-        Lbl_Compilar1 = new javax.swing.JLabel();
-        Lbl_Compilar2 = new javax.swing.JLabel();
+        Lbl_Compilar = new javax.swing.JLabel();
+        Lbl_Guardar = new javax.swing.JLabel();
         Panel_Lateral = new javax.swing.JPanel();
         Btn_if = new javax.swing.JButton();
         Btn_while = new javax.swing.JButton();
@@ -64,22 +69,29 @@ public class IDE extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("GiraCODE");
+        setResizable(false);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         Panel_Superior.setOpaque(false);
 
-        Lbl_Compilar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Cargar.png"))); // NOI18N
+        Lbl_Cargar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Cargar.png"))); // NOI18N
 
         Lbl_Ejecutar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Play.png"))); // NOI18N
+        Lbl_Ejecutar.setEnabled(false);
         Lbl_Ejecutar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 Lbl_EjecutarMouseClicked(evt);
             }
         });
 
-        Lbl_Compilar1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Build.png"))); // NOI18N
+        Lbl_Compilar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Build.png"))); // NOI18N
+        Lbl_Compilar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Lbl_CompilarMouseClicked(evt);
+            }
+        });
 
-        Lbl_Compilar2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Guardar.png"))); // NOI18N
+        Lbl_Guardar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Guardar.png"))); // NOI18N
 
         javax.swing.GroupLayout Panel_SuperiorLayout = new javax.swing.GroupLayout(Panel_Superior);
         Panel_Superior.setLayout(Panel_SuperiorLayout);
@@ -87,11 +99,11 @@ public class IDE extends javax.swing.JFrame {
             Panel_SuperiorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(Panel_SuperiorLayout.createSequentialGroup()
                 .addGap(123, 123, 123)
-                .addComponent(Lbl_Compilar2)
+                .addComponent(Lbl_Guardar)
+                .addGap(50, 50, 50)
+                .addComponent(Lbl_Cargar)
                 .addGap(50, 50, 50)
                 .addComponent(Lbl_Compilar)
-                .addGap(50, 50, 50)
-                .addComponent(Lbl_Compilar1)
                 .addGap(50, 50, 50)
                 .addComponent(Lbl_Ejecutar)
                 .addContainerGap(127, Short.MAX_VALUE))
@@ -102,15 +114,16 @@ public class IDE extends javax.swing.JFrame {
                 .addGap(0, 0, 0)
                 .addGroup(Panel_SuperiorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(Panel_SuperiorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(Lbl_Compilar2, javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(Lbl_Compilar1, javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(Lbl_Guardar, javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(Lbl_Compilar, javax.swing.GroupLayout.Alignment.TRAILING)
                         .addComponent(Lbl_Ejecutar))
-                    .addComponent(Lbl_Compilar)))
+                    .addComponent(Lbl_Cargar)))
         );
 
         getContentPane().add(Panel_Superior, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 10, 590, 50));
 
         Panel_Lateral.setOpaque(false);
+        Panel_Lateral.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         Btn_if.setText("Condición Si");
         Btn_if.setFocusable(false);
@@ -120,6 +133,7 @@ public class IDE extends javax.swing.JFrame {
                 Btn_ifActionPerformed(evt);
             }
         });
+        Panel_Lateral.add(Btn_if, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 130, 72));
 
         Btn_while.setText("Ciclo Mientras");
         Btn_while.setFocusable(false);
@@ -129,10 +143,12 @@ public class IDE extends javax.swing.JFrame {
                 Btn_whileActionPerformed(evt);
             }
         });
+        Panel_Lateral.add(Btn_while, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 78, 130, 72));
 
         Btn_for.setText("Ciclo Para");
         Btn_for.setFocusable(false);
         Btn_for.setRequestFocusEnabled(false);
+        Panel_Lateral.add(Btn_for, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 161, 130, 72));
 
         Btn_doWhile.setText("Ciclo Repita");
         Btn_doWhile.setFocusable(false);
@@ -142,8 +158,9 @@ public class IDE extends javax.swing.JFrame {
                 Btn_doWhileActionPerformed(evt);
             }
         });
+        Panel_Lateral.add(Btn_doWhile, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 244, 130, 72));
 
-        Btn_print.setText("Sentencia Imprimir");
+        Btn_print.setText("Línea Imprimir");
         Btn_print.setFocusable(false);
         Btn_print.setRequestFocusEnabled(false);
         Btn_print.addActionListener(new java.awt.event.ActionListener() {
@@ -151,33 +168,9 @@ public class IDE extends javax.swing.JFrame {
                 Btn_printActionPerformed(evt);
             }
         });
+        Panel_Lateral.add(Btn_print, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 327, 130, 72));
 
-        javax.swing.GroupLayout Panel_LateralLayout = new javax.swing.GroupLayout(Panel_Lateral);
-        Panel_Lateral.setLayout(Panel_LateralLayout);
-        Panel_LateralLayout.setHorizontalGroup(
-            Panel_LateralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(Btn_if, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(Btn_while, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(Btn_for, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(Btn_doWhile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(Btn_print, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        Panel_LateralLayout.setVerticalGroup(
-            Panel_LateralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Panel_LateralLayout.createSequentialGroup()
-                .addComponent(Btn_if, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Btn_while, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(Btn_for, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(Btn_doWhile, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(Btn_print, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 1, Short.MAX_VALUE))
-        );
-
-        getContentPane().add(Panel_Lateral, new org.netbeans.lib.awtextra.AbsoluteConstraints(960, 70, 120, 400));
+        getContentPane().add(Panel_Lateral, new org.netbeans.lib.awtextra.AbsoluteConstraints(960, 70, 140, 410));
 
         Txt_Editor.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         Txt_Editor.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
@@ -213,74 +206,83 @@ public class IDE extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void Txt_EditorKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Txt_EditorKeyTyped
-        
+
         int letraPresionada = evt.getKeyChar();
-        if(letraPresionada == KeyEvent.VK_SPACE || letraPresionada == '<'){
-            JOptionPane.showMessageDialog(this, "Presiona espacio");
-        } 
+        if (letraPresionada == KeyEvent.VK_SPACE || letraPresionada == '[') {
+            //JOptionPane.showMessageDialog(this, "Presiona espacio");
+        }else if(letraPresionada == '\\'){
+            evt.consume();
+            JOptionPane.showMessageDialog(this, "Este programa no permite la insercion del caracter \'\\\'");
+        }
     }//GEN-LAST:event_Txt_EditorKeyTyped
 
     private void Btn_doWhileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_doWhileActionPerformed
         int posicionCursor = Txt_Editor.getCaretPosition();
         String codigoRepita = "repita\n\n#cuando<  >";
-        
-        try {                              
+
+        try {
             // Inserta el bloque repita-cuando
             Txt_Editor.getDocument().insertString(posicionCursor, codigoRepita, null);
             // Pinta de color azul las plabras reservadas
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 6, styleReservada, false);
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 8, 8, styleReservada, false);
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 18, 1, styleReservada, false);
-        } catch (BadLocationException ex) {}
-        
+        } catch (BadLocationException ex) {
+        }
+
         // Coloca el cursor en la condicion de parada
         Txt_Editor.setCaretPosition(posicionCursor + 17);
     }//GEN-LAST:event_Btn_doWhileActionPerformed
 
     /**
      * Evento utilizado para insertar un bloque de codigo del ciclo 'mientras'
-     * @param evt 
+     *
+     * @param evt
      */
     private void Btn_whileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_whileActionPerformed
         int posicionCursor = Txt_Editor.getCaretPosition();
         String codigoMientras = "mientras<  >\n\n#mientras";
-        
-        try {                              
+
+        try {
             // Inserta el bloque mientras
             Txt_Editor.getDocument().insertString(posicionCursor, codigoMientras, null);
             // Pinta de color azul las plabras reservadas
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 9, styleReservada, false);
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 11, 1, styleReservada, false);
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 14, 9, styleReservada, false);
-        } catch (BadLocationException ex) {}
-        
+        } catch (BadLocationException ex) {
+        }
+
         // Coloca el cursor en la condicion de parada
         Txt_Editor.setCaretPosition(posicionCursor + 10);
     }//GEN-LAST:event_Btn_whileActionPerformed
 
     private void Txt_EditorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Txt_EditorMouseClicked
-        
+
         // Verifica si el click presionado fue el izquierdo = 1
-        if(evt.getButton() == 1)
-            JOptionPane.showMessageDialog(this, "Este es el que necesito");
+        if (evt.getButton() == 1) {
+            //JOptionPane.showMessageDialog(this, "Este es el que necesito");
+        }
     }//GEN-LAST:event_Txt_EditorMouseClicked
 
     /**
      * Evento utilizado para insertar la sentencia de imprimir en consola
-     * @param evt 
+     *
+     * @param evt
      */
     private void Btn_printActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_printActionPerformed
         int posicionCursor = Txt_Editor.getCaretPosition();
         String codigoImprimir = "imprimir<\"  \">\n";
-        
-        try {                              
+
+        try {
             // Inserta el bloque mientras
             Txt_Editor.getDocument().insertString(posicionCursor, codigoImprimir, null);
             // Pinta de color azul las plabras reservadas
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 10, styleReservada, false);
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 12, 2, styleReservada, false);
-        } catch (BadLocationException ex) {}
-        
+        } catch (BadLocationException ex) {
+        }
+
         // Coloca el cursor en la condicion de parada
         Txt_Editor.setCaretPosition(posicionCursor + 11);
     }//GEN-LAST:event_Btn_printActionPerformed
@@ -288,23 +290,53 @@ public class IDE extends javax.swing.JFrame {
     private void Btn_ifActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_ifActionPerformed
         int posicionCursor = Txt_Editor.getCaretPosition();
         String codigoSi = "si<  >\n\n#si\n";
-        
-        try {                              
+
+        try {
             // Inserta la sentencia si
             Txt_Editor.getDocument().insertString(posicionCursor, codigoSi, null);
             // Pinta de color azul las plabras reservadas
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 3, styleReservada, false);
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 5, 1, styleReservada, false);
             Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 8, 3, styleReservada, false);
-        } catch (BadLocationException ex) {}
-        
+        } catch (BadLocationException ex) {
+        }
+
         // Coloca el cursor en la condicion de parada
         Txt_Editor.setCaretPosition(posicionCursor + 4);
     }//GEN-LAST:event_Btn_ifActionPerformed
 
     private void Lbl_EjecutarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_EjecutarMouseClicked
         JOptionPane.showMessageDialog(this, "Acaba de hacer click en ejecutar");
+
+        // Limpia el campo de salida para una nueva ejecucion.
+        Document documento = Txt_Output.getDocument();
+        try {
+            documento.remove(0, documento.getLength());
+        } catch (BadLocationException ex) { }
     }//GEN-LAST:event_Lbl_EjecutarMouseClicked
+
+    private void Lbl_CompilarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_CompilarMouseClicked
+
+        Document documento = Txt_Editor.getDocument();
+        try {
+            // Obtiene todo el codigo del Editor
+            String codigo = documento.getText(0, documento.getLength());
+
+            SyntaxChecker checker = new SyntaxChecker(codigo);
+            checker.verificarCodigo();
+            
+            // Borra el texto que haya en la salida
+            Txt_Output.getDocument().remove(0, Txt_Output.getDocument().getLength());
+            // Verifica si el codigo esta bueno o no
+            if(checker.isSyntaxisCorrecta()){                
+                Lbl_Ejecutar.setEnabled(true);                
+            }else{                
+                Txt_Output.getDocument().insertString(0, "Hay algun error", styleReservada);
+            }
+
+        } catch (BadLocationException ex) {
+        }
+    }//GEN-LAST:event_Lbl_CompilarMouseClicked
 
     /**
      * @param args the command line arguments
@@ -347,10 +379,10 @@ public class IDE extends javax.swing.JFrame {
     private javax.swing.JButton Btn_if;
     private javax.swing.JButton Btn_print;
     private javax.swing.JButton Btn_while;
+    private javax.swing.JLabel Lbl_Cargar;
     private javax.swing.JLabel Lbl_Compilar;
-    private javax.swing.JLabel Lbl_Compilar1;
-    private javax.swing.JLabel Lbl_Compilar2;
     private javax.swing.JLabel Lbl_Ejecutar;
+    private javax.swing.JLabel Lbl_Guardar;
     private javax.swing.JLabel Lbl_Logo;
     private javax.swing.JLabel Lbl_Wallpaper;
     private javax.swing.JPanel Panel_Lateral;

@@ -13,7 +13,7 @@ import GUI.IDE;
  */
 public class main {
     
-    public static ListaCircular palabrasReservadas;
+    public static ListaDoble palabrasReservadas;
 
     /**
      * @param args the command line arguments
@@ -21,51 +21,62 @@ public class main {
     public static void main(String[] args) {
         
         // SE CREA LA LISTA CIRCULAR
-        palabrasReservadas = new ListaCircular();
+        palabrasReservadas = new ListaDoble();
         
         //******************* INSERCION DE PALABRAS RESERVADAS *****************
-        palabrasReservadas.imprimirListaCircular();
-        palabrasReservadas.insertar("Texto", "String");
-        palabrasReservadas.insertar("entero", "int");
-        palabrasReservadas.insertar("decimal", "double");
-        palabrasReservadas.insertar("caracter", "char");
-        palabrasReservadas.insertar("binario", "boolean");
-        palabrasReservadas.insertar("!", ";");
-        palabrasReservadas.insertar("programa", "class");
-        palabrasReservadas.insertar("#programa", "");
-        palabrasReservadas.insertar("imprimirln", "System.out.println");
-        palabrasReservadas.insertar("imprimir", "System.out.print");
-        palabrasReservadas.insertar("mientras", "while");        
-        palabrasReservadas.insertar("#mientras", "");
-        palabrasReservadas.insertar("para", "for");
-        palabrasReservadas.insertar("#para", "");
-        palabrasReservadas.insertar("si", "if");
-        palabrasReservadas.insertar("osi", "else if");
-        palabrasReservadas.insertar("sino", "else");
-        palabrasReservadas.insertar("#si", "");
-        palabrasReservadas.insertar("repita", "do");
-        palabrasReservadas.insertar("cuando", "while");
-        palabrasReservadas.insertar("#repita", "");
-        palabrasReservadas.insertar("<", "(");
-        palabrasReservadas.insertar(">", ")");
-        palabrasReservadas.insertar("$", "");
-        palabrasReservadas.insertar("::", "");
+        palabrasReservadas.imprimirListaDoble();
         
-        // Operadores binarios
-        palabrasReservadas.insertar("no", "!");
+        // Inicio y fin de de programa
+        palabrasReservadas.insertarAlInicio("programa", "class");
+        palabrasReservadas.insertarAlInicio("#programa", "");
+        // Tipos de datos
+        palabrasReservadas.insertarAlInicio("Texto", "String");
+        palabrasReservadas.insertarAlInicio("entero", "int");
+        palabrasReservadas.insertarAlInicio("decimal", "double");
+        palabrasReservadas.insertarAlInicio("caracter", "char");
+        palabrasReservadas.insertarAlInicio("binario", "boolean");
+        // Imprimir
+        palabrasReservadas.insertarAlFinal("imprimirln", "System.out.println");        
+        palabrasReservadas.insertarAlInicio("imprimir", "System.out.print");
+        // Condicional If
+        palabrasReservadas.insertarAlInicio("si", "if");
+        palabrasReservadas.insertarAlInicio("osi", "else if");
+        palabrasReservadas.insertarAlInicio("sino", "else");
+        palabrasReservadas.insertarAlInicio("#si", "");
+        // Ciclos
+        palabrasReservadas.insertarAlInicio("mientras", "while");        
+        palabrasReservadas.insertarAlInicio("#mientras", "");
+        palabrasReservadas.insertarAlInicio("para", "for");
+        palabrasReservadas.insertarAlInicio("#para", "");        
+        palabrasReservadas.insertarAlInicio("repita", "do");
+        palabrasReservadas.insertarAlInicio("#cuando", "while");
         
-        palabrasReservadas.insertar("o", "||");
-        palabrasReservadas.insertar("y", "&&");
-        palabrasReservadas.insertar("=", "==");
-        palabrasReservadas.insertar("<>", "!=");
-        palabrasReservadas.insertar("<", "<");
-        palabrasReservadas.insertar(">", ">");
-        palabrasReservadas.insertar("<=", "<=");
-        palabrasReservadas.insertar(">=", ">=");
         
-        palabrasReservadas.insertar("verdad", "true");
-        palabrasReservadas.insertar("falso", "false");
-        palabrasReservadas.imprimirListaCircular();
+//////        // Fin de linea        
+//////        palabrasReservadas.insertarAlInicio("!", ";");
+//////        // Valores binarios
+//////        palabrasReservadas.insertarAlInicio("verdad", "true");
+//////        palabrasReservadas.insertarAlInicio("falso", "false");        
+//////        
+//////        // Caracteres especiales
+//////        palabrasReservadas.insertarAlInicio("[", "(");
+//////        palabrasReservadas.insertarAlInicio("]", ")");
+//////        palabrasReservadas.insertarAlInicio("$", "");
+//////        palabrasReservadas.insertarAlInicio("::", "");
+//////        
+//////        // Operadores binarios
+//////        palabrasReservadas.insertarAlInicio("no", "!");
+//////        
+//////        palabrasReservadas.insertarAlInicio("o", "||");
+//////        palabrasReservadas.insertarAlInicio("y", "&&");
+//////        palabrasReservadas.insertarAlInicio("=", "==");
+//////        palabrasReservadas.insertarAlInicio("<>", "!=");
+//////        palabrasReservadas.insertarAlInicio("<", "<");
+//////        palabrasReservadas.insertarAlInicio(">", ">");
+//////        palabrasReservadas.insertarAlInicio("<=", "<=");
+//////        palabrasReservadas.insertarAlInicio(">=", ">=");
+        
+        palabrasReservadas.imprimirListaDoble();
         //**********************************************************************
         
         System.out.println("Palabra mientras: " + palabrasReservadas.esPalabraReservada("mientras"));

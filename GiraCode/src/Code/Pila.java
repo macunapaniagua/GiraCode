@@ -29,6 +29,15 @@ public class Pila {
         pNuevoNodo.setSiguiente(top);
         top = pNuevoNodo;
     }
+    
+    /**
+     * Metodo utilizado para insertar un nuevo elemento a la pila
+     * @param pDato dato que se va a insertar a la pila,
+     */
+    public void push(String pDato){
+        NodoSimple nuevoNodo = new NodoDoble(pDato);
+        push(nuevoNodo);
+    }
 
     /**
      * Metodo para extraer un elemento de la Pila. Se extrae el que se encuentre
