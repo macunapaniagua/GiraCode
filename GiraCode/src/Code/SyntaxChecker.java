@@ -5,8 +5,6 @@
  */
 package Code;
 
-import java.util.ArrayList;
-
 /**
  *
  * @author Mario A
@@ -65,7 +63,8 @@ public class SyntaxChecker {
 
                     // Verifica si el caracter analizado es un espacio ubicado 
                     // despues de una palabra, si es un '[' o ':'
-                    if ((lineaAnalizada.charAt(j) == ' ' || lineaAnalizada.charAt(j) == '[' || lineaAnalizada.charAt(j) == ':')
+                    if ((lineaAnalizada.charAt(j) == ' ' || lineaAnalizada.charAt(j) == '['
+                            || lineaAnalizada.charAt(j) == ':' || lineaAnalizada.charAt(j) == '=')
                             && !palabraAnalizada.equals("")) {
 
                         if (main.palabrasReservadas.esPalabraReservada(palabraAnalizada)) {
@@ -88,19 +87,49 @@ public class SyntaxChecker {
                                         // Algo fallo al cerrar la etiqueta #programa. Sale de la compilacion
                                         return;
                                     }
+                                case "Texto":
+                                    // Intento crear una variable de tipo Texto
+                                    if (this.crearVariable(lineaAnalizada, j, (i + 1), "Texto")) {
+                                        break;
+                                    } else {
+                                        // Algo fallo al crear la variable. Sale de la compilacion
+                                        return;
+                                    }
+                                case "entero":
+                                    // Intento crear una variable de tipo entero
+                                    if (this.crearVariable(lineaAnalizada, j, (i + 1), "entero")) {
+                                        break;
+                                    } else {
+                                        // Algo fallo al crear la variable. Sale de la compilacion
+                                        return;
+                                    }
+                                case "decimal":
+                                    // Intento crear una variable de tipo decimal
+                                    if (this.crearVariable(lineaAnalizada, j, (i + 1), "decimal")) {
+                                        break;
+                                    } else {
+                                        // Algo fallo al crear la variable. Sale de la compilacion
+                                        return;
+                                    }
+                                case "caracter":
+                                    // Intento crear una variable de tipo caracter
+                                    if (this.crearVariable(lineaAnalizada, j, (i + 1), "caracter")) {
+                                        break;
+                                    } else {
+                                        // Algo fallo al crear la variable. Sale de la compilacion
+                                        return;
+                                    }
+                                case "binario":
+                                    // Intento crear una variable de tipo binario
+                                    if (this.crearVariable(lineaAnalizada, j, (i + 1), "binario")) {
+                                        break;
+                                    } else {
+                                        // Algo fallo al crear la variable. Sale de la compilacion
+                                        return;
+                                    }
                                 case "imprimir":
                                     break;
                                 case "imprimirln":
-                                    break;
-                                case "Texto":
-                                    break;
-                                case "entero":
-                                    break;
-                                case "decimal":
-                                    break;
-                                case "caracter":
-                                    break;
-                                case "binario":
                                     break;
                                 case "si":
                                     break;
@@ -123,17 +152,30 @@ public class SyntaxChecker {
                                 case "#cuando":
                                     break;
                             }
-                            // continua con la proxima linea de codigo (proxima iteracion del for)
-                            // continue;
-                        } else if (variables.existeVariable(palabraAnalizada)) {
-                            // La palabra reservada es una variable, por lo tanto debe de ser una asignacion de valor
+                        }
+                        // Verifica si es una variable
+                        else if (variables.existeVariable(palabraAnalizada)) {
+                            System.out.println("Es variable");
+                            // Verifica si la variable que se va a usar es el nombre de la clase
+                            if (variables.getVariable(palabraAnalizada).getTipo().equals("clase")) {
+                                System.out.println("ERROR DE SINTAXIS en la linea " + (i + 1)
+                                        + ". No se pueden realizar operaciones sobre el nombre de la clase");
+                                return;
+                            } else {
+                                // Verifica si la asignacion se ejecuto correctamente
+                                if (realizarAsignacion(lineaAnalizada, j, (i + 1))) {
+                                    break;
+                                } else {
+                                    return;
+                                }
+                            }
                         } else {
                             // No se reconoce la palabra
-                            System.out.println("No se reconoce la palabra " + palabraAnalizada
-                                    + " ubicada en la linea de codigo " + (i + 1));
-                            //return;
+                            System.out.println("ERROR DE SINTAXIS en la linea " +(i + 1)
+                                    + ". No se reconoce la palabra '" + palabraAnalizada + "' como una sentencia válida");
+                            return;
                         }
-                        // Termina de analizar la linea de codigo actual
+                        // Termina de analizar la linea de codigo actual para analizar la siguiente
                         break;
 
                     } else {
@@ -145,10 +187,184 @@ public class SyntaxChecker {
                 }
             }
         }
+        // Se verifica que la pila de palabras reservadas haya quedado vacia, lo que
+        // indica que no quedaron etiquetas abiertas en el programa.
+        if (pilaPalabrasReservadas.estaVacia()) {
+            syntaxisCorrecta = true;
+            variables = null;
+        } else {
+            System.out.println("ERROR DE SINTAXIS. Aun no se ha cerrado la "
+                    + "etiqueta '" + pilaPalabrasReservadas.getValorEnTop() + '\'');
+        }
     }
 
-    public boolean crearVariable() {
-        return true;
+    /**
+     * Metodo utilizado para verificar la linea de creacion de variables y crear
+     * una de estas cuando este correcta la sintaxis
+     *
+     * @param pLineaCodigo Linea de codigo donde hay una declaracion de vaiables
+     * @param pPosicionCaracter posicion donde se encuentra el caracter
+     * siguiente de la palabra reservada
+     * @param pNumeroLinea numero de la linea analizada
+     * @param pTipoVariable El tipo de variable a crear: Texto, entero...
+     * @return true si la sintaxis esta correcta o false en caso que haya
+     * problemas
+     */
+    public boolean crearVariable(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea, String pTipoVariable) {
+        // Verifica si despues de Texto, entero... el caracter existente es ' ' o ':' 
+        if (pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == ':') {
+            // Verifica si ya se abrio programa o en caso contrario la pila esta vacia
+            if (pilaPalabrasReservadas.estaVacia()) {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible crear variables sin antes abrir la etiqueta programa");
+                return false;
+            } else {
+                // Corta la linea de codigo, despues de el tipo de variable a crear
+                pLineaCodigo = pLineaCodigo.substring(pPosicionCaracter);
+                // Coloca espacios entre los caracteres especiales para este ejercicio
+                pLineaCodigo = pLineaCodigo.replaceAll("::", " :: ");
+                //pLineaCodigo = pLineaCodigo.replaceAll("=", " = ");
+                pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
+                pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
+                // Hace un arreglo con todas las palabras de la linea separadas por espacios
+                String[] palabrasLinea = pLineaCodigo.split(" ");
+
+                int indiceAnalizado = 0;
+
+                // Verifica que existan mas palabras en la linea para analizar
+                if (!(palabrasLinea.length > indiceAnalizado)) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No se ha encontrado el caracter :: despues del tipo de variable a crear");
+                    return false;
+                }
+
+                // Se analiza la existencia de '::' despues del tipo de variable 
+                for (; indiceAnalizado < palabrasLinea.length; indiceAnalizado++) {
+                    // Realiza hasta que el campo no sea vacio
+                    if (!palabrasLinea[indiceAnalizado].equals("")) {
+                        // Verifica que la palabra sea unicamente "::"
+                        if (!palabrasLinea[indiceAnalizado].equals("::")) {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". No se ha encontrado el caracter :: despues del tipo de variable a crear");
+                            return false;
+                        } else {
+                            indiceAnalizado++;
+                            break;
+                        }
+                    }
+                }
+
+                // Verifica que existan mas palabras en la linea para analizar
+                if (!(palabrasLinea.length > indiceAnalizado)) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No se ha especificado el nombre para la variable que se desea crear");
+                    return false;
+                }
+
+                String nombreVariable = "";
+                // Se analiza el nombre de la variable
+                for (; indiceAnalizado < palabrasLinea.length; indiceAnalizado++) {
+                    // Realiza hasta que el campo no sea vacio
+                    if (!palabrasLinea[indiceAnalizado].equals("")) {
+                        nombreVariable = palabrasLinea[indiceAnalizado];
+                        // Verifica si es ! y no escribio el nombre de la variable
+                        if (nombreVariable.equals("!")) {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". No se ha especificado el nombre de la variable");
+                            return false;
+                        } // Verifica si el primer caracter del nombre de la variable, es una letra
+                        else if (!Character.isLetter(nombreVariable.charAt(0))) {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". El nombre de una variable debe iniciar con una letra");
+                            return false;
+                        } else {
+                            // Se verifica que el nombre de la variable solo tenga numeros y letras
+                            for (int i = 1; i < nombreVariable.length(); i++) {
+                                if (!Character.isLetter(nombreVariable.charAt(i)) && !Character.isDigit(nombreVariable.charAt(i))) {
+                                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                            + ". El nombre de una variable debe contener únicamente números y letras");
+                                    return false;
+                                }
+                            }
+                            indiceAnalizado++;
+                            break;
+                        }
+                    }
+                }
+
+                // Verifica que exista el cierre de linea
+                if (!(palabrasLinea.length > indiceAnalizado)) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No se ha encontrado el cierre de línea '!'");
+                    return false;
+                }
+
+                // Se analiza la existencia de '!' despues del nombre de variable 
+                for (; indiceAnalizado < palabrasLinea.length; indiceAnalizado++) {
+                    // Realiza hasta que el campo no sea vacio
+                    if (!palabrasLinea[indiceAnalizado].equals("")) {
+                        // Verifica que la palabra sea unicamente "!"
+                        if (!palabrasLinea[indiceAnalizado].equals("!")) {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". No se ha encontrado el cierre de línea '!' después del nombre de la variable");
+                            return false;
+                        } else {
+                            indiceAnalizado++;
+                            break;
+                        }
+                    }
+                }
+
+                // Verifica que no existe otra palabra o caracter luego del '!'
+                for (; indiceAnalizado < palabrasLinea.length; indiceAnalizado++) {
+                    // Realiza hasta que el campo no sea vacio
+                    if (!palabrasLinea[indiceAnalizado].equals("")) {
+                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                + ". No pueden haber caracteres ni palabres después del cierre de línea '!'");
+                        return false;
+                    }
+                }
+
+                // Verifica si es una plabra reservada
+                if (main.palabrasReservadas.esPalabraReservada(nombreVariable)) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". El nombre que intenta darle a la variable es una palabra reservada");
+                    return false;
+                } // Verifica si ya existe una variable con ese nombre
+                else if (variables.existeVariable(nombreVariable)) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". Ya existe una variable con el nombre " + nombreVariable);
+                    return false;
+                } else {
+                    // AL FIN, AQUI SE INSERTA LA VARIABLE EN LA LISTA
+                    switch (pTipoVariable) {
+                        case "Texto":
+                            variables.insertar(nombreVariable, "", pTipoVariable);
+                            break;
+                        case "entero":
+                            variables.insertar(nombreVariable, "0", pTipoVariable);
+                            break;
+                        case "decimal":
+                            variables.insertar(nombreVariable, "0.0", pTipoVariable);
+                            break;
+                        case "binario":
+                            variables.insertar(nombreVariable, "false", pTipoVariable);
+                            break;
+                        case "caracter":
+                            variables.insertar(nombreVariable, "", pTipoVariable);
+                            break;
+                    }
+                    return true;
+                }
+            }
+
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la etiqueta " + pTipoVariable + ", no se puede ubicar el "
+                    + "caracter " + pLineaCodigo.charAt(pPosicionCaracter) + ""
+                    + ". La sintaxis correcta es: " + pTipoVariable + "::nombreVariable{=valor}!");
+            return false;
+        }
     }
 
     /**
@@ -209,13 +425,12 @@ public class SyntaxChecker {
                     System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". "
                             + "No se ha especificado el nombre del programa.");
                     return false;
-                }
-                // Verifica que el nombre del programa no sea una palabra reservada
-                else if(main.palabrasReservadas.esPalabraReservada(nombrePrograma)){
+                } // Verifica que el nombre del programa no sea una palabra reservada
+                else if (main.palabrasReservadas.esPalabraReservada(nombrePrograma)) {
                     System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". "
                             + "El nombre del programa no puede ser una palabra reservada");
                     return false;
-                }else {
+                } else {
                     // Aqui verifica que no haya otro caracter despues del nombre del programa
                     boolean otraLetra = false;
                     for (; pPosicionCaracter < pLineaCodigo.length(); pPosicionCaracter++) {
@@ -247,6 +462,16 @@ public class SyntaxChecker {
         }
     }
 
+    /**
+     * Metodo utilizado para verificar la linea de cierre del programa
+     *
+     * @param pLineaCodigo Linea de codigo donde se cierra programa
+     * @param pPosicionCaracter posicion donde se encuentra el caracter
+     * siguiente a la palabra #programa
+     * @param pNumeroLinea numero de la linea analizada
+     * @return true si la sintaxis esta correcta o false en caso que haya
+     * problemas
+     */
     public boolean cerrarPrograma(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea) {
         // Verifica que el caracter ubicado despues de #programa sea ' ' y no ':' o '['
         if (pLineaCodigo.charAt(pPosicionCaracter) == ' ') {
@@ -278,10 +503,8 @@ public class SyntaxChecker {
                             + "programa (#programa), no puede contener carácteres después de él.");
                     return false;
                 } else {
-                    // Escritura exitosa del nombre del programa. Hace pop a la lista de palabras reservadas
+                    // Hace pop a la lista de palabras reservadas
                     pilaPalabrasReservadas.pop();
-                    syntaxisCorrecta = true;
-                    variables = null;
                     return true;
                 }
             }
@@ -290,6 +513,82 @@ public class SyntaxChecker {
                     + ". Después de la etiqueta #programa, no se puede ubicar el "
                     + "caracter " + pLineaCodigo.charAt(pPosicionCaracter) + ""
                     + ". La sintaxis correcta es: #programa");
+            return false;
+        }
+    }
+
+    public boolean realizarAsignacion(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '=') {
+
+            pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
+            int ultimoChar = pLineaCodigo.length() - 1;
+            
+            //////////    Se busca el caracter de fin de linea '!'  ////////////
+            
+            boolean cierreEncontrado = false;            
+            // Busca que exista el cierre de linea
+            for (; ultimoChar > pPosicion; ultimoChar--) {
+                if(pLineaCodigo.charAt(ultimoChar) != ' '){
+                    if(pLineaCodigo.charAt(ultimoChar) == '!'){
+                        //ultimoChar--;
+                        cierreEncontrado = true;
+                    }
+                    break;
+                }                
+            }
+            // Verifica que se haya encontrado el cierre de linea '!'
+            if(!cierreEncontrado){
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No se ha encontrado el cierre de la línea '!'");
+                return false;
+            }
+            
+            ///////////    Se busca el caracter de asignacion '='  /////////////
+            
+            boolean igualEncontrado = false;
+            // Recorre la linea de codigo en busca del '='
+            for (; pPosicion < ultimoChar; pPosicion++) {
+                if (pLineaCodigo.charAt(pPosicion) != ' ') {
+                    if (pLineaCodigo.charAt(pPosicion) == '=') {
+                        igualEncontrado = true;
+                        pPosicion++;
+                    }
+                    break;
+                }
+            }
+            // Verifica si no hay un '=' y envia el error de sintaxis
+            if (!igualEncontrado) {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No se ha encontrado el '=' después del nombre de la variable");
+                return false;
+            }
+
+            // Esta es toda la equivalencia que voy a realizar sobre la variable
+            String equivalencia = pLineaCodigo.substring(pPosicion, ultimoChar);
+            
+            
+//            
+//
+//            pLineaCodigo = pLineaCodigo.substring(pPosicion);
+//            pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
+//            pLineaCodigo = pLineaCodigo.replaceAll("[", " [ ");
+//            pLineaCodigo = pLineaCodigo.replaceAll("]", " ] ");
+//            pLineaCodigo = pLineaCodigo.replaceAll("+", " + ");
+//            pLineaCodigo = pLineaCodigo.replaceAll("-", " - ");
+//            pLineaCodigo = pLineaCodigo.replaceAll("*", " * ");
+//            pLineaCodigo = pLineaCodigo.replaceAll("/", " / ");
+//            pLineaCodigo = pLineaCodigo.replaceAll("%", " % ");
+//
+//            pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
+//            pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
+//            pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
+//            pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
+            return true;
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". En la asignación de valores a una variable, no puede ir el"
+                    + " caracter '" + pLineaCodigo.charAt(pPosicion) + "' después del nombre de la variable");
             return false;
         }
     }

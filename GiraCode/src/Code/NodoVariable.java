@@ -25,6 +25,16 @@ public class NodoVariable extends NodoSimple{
         this.valor = pValor;
         this.tipo = pTipo;
     }
+    
+    /**
+     * Metodo constructor
+     * @param pNombre Nombre de la variable
+     * @param pTipo Tipo de dato que almacena la variable (entero, decimal...)
+     */
+    public NodoVariable(String pNombre, String pTipo){
+        super(pNombre);
+        this.tipo = pTipo;
+    }
 
     /**
      * Metodo utilizado para obtener el Valor que almacena una variable

@@ -24,23 +24,17 @@ public class ListaSimpleVariables {
      * Metodo utilizado para insertar una nueva variable a la lista
      *
      * @param pNuevoNodo Nodo que contiene los datos de la variable
-     * @return true si la variable se pudo insertar o false en caso contrario
      */
-    public boolean insertar(NodoVariable pNuevoNodo) {
-        if (!existeVariable(pNuevoNodo.getClave())) {
-            if (raiz == null) {
-                raiz = pNuevoNodo;
-            } else {
-                NodoVariable recorrido = raiz;
-                while (recorrido.getSiguiente() != null) {
-                    recorrido = (NodoVariable) recorrido.getSiguiente();
-                }
-                recorrido.setSiguiente(pNuevoNodo);
-            }
-            return true;
+    public void insertar(NodoVariable pNuevoNodo) {
+        if (raiz == null) {
+            raiz = pNuevoNodo;
         } else {
-            return false;
-        }
+            NodoVariable recorrido = raiz;
+            while (recorrido.getSiguiente() != null) {
+                recorrido = (NodoVariable) recorrido.getSiguiente();
+            }
+            recorrido.setSiguiente(pNuevoNodo);
+        }           
     }
 
     /**
@@ -49,16 +43,21 @@ public class ListaSimpleVariables {
      * @param pNombreVariable Nombre de la variable
      * @param pValor Valor de la variable
      * @param pTipo Tipo de dato de la variable
-     * @return true si la variable fue creada o false si no se puede crear
      */
-    public boolean insertar(String pNombreVariable, String pValor, String pTipo) {
-        if (!existeVariable(pNombreVariable)) {
-            NodoVariable pNuevoNodo = new NodoVariable(pNombreVariable, pValor, pTipo);
-            insertar(pNuevoNodo);
-            return true;
-        } else {
-            return false;
-        }
+    public void insertar(String pNombreVariable, String pValor, String pTipo) {
+        NodoVariable pNuevoNodo = new NodoVariable(pNombreVariable, pValor, pTipo);
+        insertar(pNuevoNodo);
+    }
+    
+    /**
+     * Metodo utilizado para insertar una nueva variable a la lista
+     *
+     * @param pNombreVariable Nombre de la variable
+     * @param pTipo Tipo de dato de la variable
+     */
+    public void insertar(String pNombreVariable, String pTipo) {
+        NodoVariable pNuevoNodo = new NodoVariable(pNombreVariable, pTipo);
+        insertar(pNuevoNodo);
     }
 
     /**
