@@ -14,6 +14,7 @@ import GUI.IDE;
 public class main {
 
     public static ListaDoble palabrasReservadas;
+    public static ListaDoble listaOperadores;
 
     /**
      * @param args the command line arguments
@@ -22,6 +23,7 @@ public class main {
 
         // SE CREA LA LISTA CIRCULAR
         palabrasReservadas = new ListaDoble();
+        listaOperadores = new ListaDoble();
 
         //******************* INSERCION DE PALABRAS RESERVADAS *****************
         palabrasReservadas.imprimirListaDoble();
@@ -36,7 +38,7 @@ public class main {
         palabrasReservadas.insertarAlInicio("caracter", "char");
         palabrasReservadas.insertarAlInicio("binario", "boolean");
         // Imprimir
-        palabrasReservadas.insertarAlFinal("imprimirln", "System.out.println");
+    //    palabrasReservadas.insertarAlFinal("imprimirln", "System.out.println");
         palabrasReservadas.insertarAlInicio("imprimir", "System.out.print");
         // Condicional If
         palabrasReservadas.insertarAlInicio("si", "if");
@@ -58,24 +60,34 @@ public class main {
         palabrasReservadas.insertarAlInicio("o", "||");
         palabrasReservadas.insertarAlInicio("y", "&&");
         palabrasReservadas.insertarAlInicio("no", "!");
-
+        
+        
 //////        // Fin de linea        
-//        palabrasReservadas.insertarAlInicio("!", ";");        
+//        listaOperadores.insertarAlInicio("!", ";");        
 //////        
 //////        // Caracteres especiales
-//////        palabrasReservadas.insertarAlInicio("[", "(");
-//////        palabrasReservadas.insertarAlInicio("]", ")");
-//////        palabrasReservadas.insertarAlInicio("$", "");
-//        palabrasReservadas.insertarAlInicio("::", "");
+//////        listaOperadores.insertarAlInicio("[", "(");
+//////        listaOperadores.insertarAlInicio("]", ")");
+//////        listaOperadores.insertarAlInicio("$", "");
+//        listaOperadores.insertarAlInicio("::", "");
 //////        
 //////        // Operadores binarios
-//////        palabrasReservadas.insertarAlInicio("=", "==");
-//////        palabrasReservadas.insertarAlInicio("<>", "!=");
-//////        palabrasReservadas.insertarAlInicio("<", "<");
-//////        palabrasReservadas.insertarAlInicio(">", ">");
-//////        palabrasReservadas.insertarAlInicio("<=", "<=");
-//////        palabrasReservadas.insertarAlInicio(">=", ">=");
+        listaOperadores.insertarAlInicio("+", "+");
+        listaOperadores.insertarAlInicio("-", "-");
+        listaOperadores.insertarAlInicio("*", "*");
+        listaOperadores.insertarAlInicio("/", "/");
+        listaOperadores.insertarAlInicio("%", "%");
+        listaOperadores.insertarAlInicio("=", "==");
+        listaOperadores.insertarAlInicio("<>", "!=");
+        listaOperadores.insertarAlInicio("<", "<");
+        listaOperadores.insertarAlInicio(">", ">");
+        listaOperadores.insertarAlInicio("<=", "<=");
+        listaOperadores.insertarAlInicio(">=", ">=");
+        
+        
         palabrasReservadas.imprimirListaDoble();
+        System.out.println("");
+        listaOperadores.imprimirListaDoble();
         //**********************************************************************
 
         System.out.println("Palabra mientras: " + palabrasReservadas.esPalabraReservada("mientras"));

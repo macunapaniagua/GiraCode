@@ -128,9 +128,15 @@ public class SyntaxChecker {
                                         return;
                                     }
                                 case "imprimir":
-                                    break;
-                                case "imprimirln":
-                                    break;
+                                    // Intenta imprimir una linea
+                                    if (this.verificarImprimir(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        // Algo fallo al imprimir
+                                        return;
+                                    }
+//                                case "imprimirln":
+//                                    break;
                                 case "si":
                                     break;
                                 case "osi":
@@ -152,8 +158,7 @@ public class SyntaxChecker {
                                 case "#cuando":
                                     break;
                             }
-                        }
-                        // Verifica si es una variable
+                        } // Verifica si es una variable
                         else if (variables.existeVariable(palabraAnalizada)) {
                             System.out.println("Es variable");
                             // Verifica si la variable que se va a usar es el nombre de la clase
@@ -163,7 +168,7 @@ public class SyntaxChecker {
                                 return;
                             } else {
                                 // Verifica si la asignacion se ejecuto correctamente
-                                if (realizarAsignacion(lineaAnalizada, j, (i + 1))) {
+                                if (realizarAsignacion(lineaAnalizada, j, (i + 1), variables.getVariable(palabraAnalizada).getTipo())) {
                                     break;
                                 } else {
                                     return;
@@ -171,8 +176,9 @@ public class SyntaxChecker {
                             }
                         } else {
                             // No se reconoce la palabra
-                            System.out.println("ERROR DE SINTAXIS en la linea " +(i + 1)
-                                    + ". No se reconoce la palabra '" + palabraAnalizada + "' como una sentencia válida");
+                            System.out.println("ERROR DE SINTAXIS en la linea " + (i + 1)
+                                    + ". No se reconoce la palabra '" + palabraAnalizada + "' como una sentencia válida"
+                                    + " o es una variable que no ha sido declarada");
                             return;
                         }
                         // Termina de analizar la linea de codigo actual para analizar la siguiente
@@ -333,7 +339,7 @@ public class SyntaxChecker {
                 } // Verifica si ya existe una variable con ese nombre
                 else if (variables.existeVariable(nombreVariable)) {
                     System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                            + ". Ya existe una variable con el nombre " + nombreVariable);
+                            + ". Ya existe una variable o programa con el nombre '" + nombreVariable + "'");
                     return false;
                 } else {
                     // AL FIN, AQUI SE INSERTA LA VARIABLE EN LA LISTA
@@ -517,38 +523,595 @@ public class SyntaxChecker {
         }
     }
 
-    public boolean realizarAsignacion(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
-
-        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '=') {
-
-            pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
-            int ultimoChar = pLineaCodigo.length() - 1;
-            
-            //////////    Se busca el caracter de fin de linea '!'  ////////////
-            
-            boolean cierreEncontrado = false;            
-            // Busca que exista el cierre de linea
-            for (; ultimoChar > pPosicion; ultimoChar--) {
-                if(pLineaCodigo.charAt(ultimoChar) != ' '){
-                    if(pLineaCodigo.charAt(ultimoChar) == '!'){
-                        //ultimoChar--;
-                        cierreEncontrado = true;
-                    }
-                    break;
-                }                
+    /**
+     * Metodo utilizado para buscar la posicion del caracter de cierre de linea
+     *
+     * @param pCodigo Linea de codigo a analizar
+     * @param pPosicionInicio Posicion a partir de la cual comienza el codigo a
+     * analizar
+     * @return el numero de linea donde esta el caracter '!' o -1 si no existe
+     */
+    public int getFinLinea(String pCodigo, int pPosicionInicio) {
+        int ultimoChar = pCodigo.length() - 1;
+        // Busca que exista el cierre de linea
+        for (; ultimoChar > pPosicionInicio; ultimoChar--) {
+            if (pCodigo.charAt(ultimoChar) != ' ') {
+                if (pCodigo.charAt(ultimoChar) == '!') {
+                    return ultimoChar;
+                } else {
+                    return -1;
+                }
             }
+        }
+        return -1;
+    }
+
+    public String verificarOperacion(String pVar1, String pOperador, String pVar2) {
+        // Se va a retornar el tipo del valor si es correcta o null si es incorrecto
+        switch (pOperador) {
+            case "o":
+                if (pVar1.equals("binario") && pVar2.equals("binario")) {
+                    return "binario";
+                }
+                return null;
+            case "y":
+                if (pVar1.equals("binario") && pVar2.equals("binario")) {
+                    return "binario";
+                }
+                return null;
+            case "=":
+                if (pVar1.equals(pVar2)) {
+                    return "binario";
+                }
+                return null;
+            case "<>":
+                if (pVar1.equals(pVar2)) {
+                    return "binario";
+                }
+                return null;
+            case "<":
+                if ((pVar1.equals("decimal") && pVar2.equals("entero"))
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))
+                        || (pVar1.equals("entero") && pVar2.equals("entero"))
+                        || (pVar1.equals("decimal") && pVar2.equals("decimal"))) {
+                    return "binario";
+                }
+                return null;
+            case ">":
+                if ((pVar1.equals("decimal") && pVar2.equals("entero"))
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))
+                        || (pVar1.equals("entero") && pVar2.equals("entero"))
+                        || (pVar1.equals("decimal") && pVar2.equals("decimal"))) {
+                    return "binario";
+                }
+                return null;
+            case "<=":
+                if ((pVar1.equals("decimal") && pVar2.equals("entero"))
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))
+                        || (pVar1.equals("entero") && pVar2.equals("entero"))
+                        || (pVar1.equals("decimal") && pVar2.equals("decimal"))) {
+                    return "binario";
+                }
+                return null;
+            case ">=":
+                if ((pVar1.equals("decimal") && pVar2.equals("entero"))
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))
+                        || (pVar1.equals("entero") && pVar2.equals("entero"))
+                        || (pVar1.equals("decimal") && pVar2.equals("decimal"))) {
+                    return "binario";
+                }
+                return null;
+            case "-":
+                if ((pVar1.equals("decimal") && pVar2.equals("entero"))
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))
+                        || (pVar1.equals("decimal") && pVar2.equals("decimal"))) {
+                    return "decimal";
+                }
+                if ((pVar1.equals("entero") && pVar2.equals("entero"))) {
+                    return "entero";
+                }
+                return null;
+            case "*":
+                if ((pVar1.equals("decimal") && pVar2.equals("entero"))
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))
+                        || (pVar1.equals("decimal") && pVar2.equals("decimal"))) {
+                    return "decimal";
+                }
+                if ((pVar1.equals("entero") && pVar2.equals("entero"))) {
+                    return "entero";
+                }
+                return null;
+            case "/":
+                if ((pVar1.equals("decimal") && pVar2.equals("entero"))
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))
+                        || (pVar1.equals("decimal") && pVar2.equals("decimal"))) {
+                    return "decimal";
+                }
+                if ((pVar1.equals("entero") && pVar2.equals("entero"))) {
+                    return "entero";
+                }
+                return null;
+            case "%":
+                if ((pVar1.equals("decimal") && pVar2.equals("entero"))
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))
+                        || (pVar1.equals("decimal") && pVar2.equals("decimal"))) {
+                    return "decimal";
+                }
+                if ((pVar1.equals("entero") && pVar2.equals("entero"))) {
+                    return "entero";
+                }
+                return null;
+            case "+":
+                if (pVar1.equals("Texto") || pVar2.equals("Texto") || (pVar1.equals("caracter") && pVar2.equals("caracter"))) {
+                    return "Texto";
+                }
+                if ((pVar1.equals("decimal") && pVar2.equals("entero"))
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))
+                        || (pVar1.equals("decimal") && pVar2.equals("decimal"))) {
+                    return "decimal";
+                }
+                if ((pVar1.equals("entero") && pVar2.equals("entero"))) {
+                    return "entero";
+                }
+                return null;
+        }
+        return null;
+    }
+
+    public String verificarNo(String pValor) {
+        if (pValor.equals("binario")) {
+            return "binario";
+        } else {
+            return null;
+        }
+    }
+
+    public String resolverEcuacion(String pCodigo, int pNumeroLinea) {
+        boolean negativo = false;
+        String Var1 = "";
+        String Var2 = "";
+        String operador = "";
+        Pila pilaParentesis = new Pila();
+
+        for (int i = 0; i < pCodigo.length(); i++) {
+
+            if (pCodigo.charAt(i) != ' ') {
+                // Si es una letra, es porque es una variable o una palabra reservada
+                if (Character.isLetter(pCodigo.charAt(i))) {
+
+                    String palabra = "";
+                    // Agrega los caracteres a la palabra siempre y cuando sean letras o numeros
+                    do {
+                        palabra += pCodigo.charAt(i);
+                        i++;
+                    } while (i < pCodigo.length() && (Character.isLetter(pCodigo.charAt(i))
+                            || Character.isDigit(pCodigo.charAt(i))));
+
+                    // El do while se mueve hasta que no sea letra ni numero, pero el for va a mover otra
+                    // vez al siguiente, entonces elimino 1 iteracion para que se coloque en el ultimo numero o letra
+                    i--;
+                    // Verifica si es una variable
+                    if (variables.existeVariable(palabra)) {
+                        // Obtiene el tipo de dato de la variable
+                        String tipo = variables.getVariable(palabra).getTipo();
+                        // Verifica en cual variable se va a ingresar la variable
+                        if (Var1.equals("")) {
+                            Var1 = tipo;
+                        } else {
+                            // Verifica si hay operador en medio de la segunda expresion
+                            if (!operador.equals("")) {
+                                Var2 = tipo;
+                            } else {
+                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No se ha encontrado un operador entre las expresiones");
+                                return null;
+                            }
+                        }
+                    } // Verifica si es una palabra reservada la variable (verdadero, falso, o, y, no)
+                    else if (main.palabrasReservadas.esPalabraReservada(palabra)) {
+                        // Es una palabra reservada binaria
+                        if (palabra.equals("verdad") || palabra.equals("falso")) {
+                            if (Var1.equals("")) {
+                                Var1 = "binario";
+                            } else {
+                                // Verifica si hay operador en medio de la segunda expresion
+                                if (!operador.equals("")) {
+                                    Var2 = "binario";
+                                } else {
+                                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                            + ". No se ha encontrado un operador entre las expresiones");
+                                    return null;
+                                }
+                            }
+                        } // Es un operador binario
+                        else if (palabra.equals("y") || palabra.equals("o")) {
+                            // Verifica que exista Var1, sobre quien se va a operar
+                            if (!Var1.equals("")) {
+                                if (operador.equals("")) {
+                                    operador = palabra;
+                                } else {
+                                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                            + ". No pueden haber dos operadores seguidos");
+                                    return null;
+                                }
+                            } else {
+                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". El operador binario '" + palabra + "' debe ir en medio de una expresión, no al inicio");
+                                return null;
+                            }
+                        } // El operador binario es un no
+                        else if (palabra.equals("no")) {
+                            boolean hayCorchete = false;
+                            // Busco si el caracter que sigue es '['
+                            while ((i+1) < pCodigo.length() && !hayCorchete) {
+                                // Verifica si el proximo caracter no es espacio
+                                if (pCodigo.charAt(i+1) != ' ') {
+                                    // Verifica que el caracter sea '['
+                                    if (pCodigo.charAt(i+1) == '[') {
+                                        hayCorchete = true;
+                                    } else {
+                                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                                + ". Seguido del operador binario 'no', solo se puede ubicar un '['");
+                                        return null;
+                                    }
+                                }
+                                i++;
+                            }
+                            // Hay que hacer el push en caso de que exista corchete
+                            if (hayCorchete) {
+                                // Hace el push del corchete
+                                pilaParentesis.push("[");
+                                // Verifica si hay datos en variable y operador para hacer el push de estos
+                                if (!Var1.equals("")) {
+                                    if (!operador.equals("")) {
+                                        pilaParentesis.push(Var1);
+                                        pilaParentesis.push(operador);
+                                        Var1 = operador = "";
+                                    } else {
+                                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                                + ". No hay un operador entre la variable y el operador 'no['");
+                                        return null;
+                                    }
+                                }
+                                // Hago el push del no
+                                pilaParentesis.push("no");
+                            } else {
+                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No se encuentra el caracter '[' seguido del operador binario 'no'");
+                                return null;
+                            }
+                        } // La palabra reservada no es operable y no es un operador
+                        else {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". La palabra reservada '" + palabra + "' no es válida en este contexto");
+                            return null;
+                        }
+                    } // La palabra no se reconoce en el programa
+                    else {
+                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". La variable '" + palabra + "' no ha sido declarada en el programa");
+                        return null;
+                    }
+                } else if (Character.isDigit(pCodigo.charAt(i))) {
+
+                    //String cifra = "";
+                    // Se establece que se ha tomado el negativo.
+                    if (negativo) {
+                        negativo = false;
+                        //cifra += "-";
+                    }
+
+                    boolean hayPunto = false;
+                    do {
+                        // Verifica si es punto y que la expresion no contenga otro punto mas
+                        if (pCodigo.charAt(i) == '.') {
+                            if (!hayPunto) {
+                                // Verificar aqui que haya otro numero despues del punto
+                                if ((i + 1) < pCodigo.length() && Character.isDigit(pCodigo.charAt(i + 1))) {
+                                    hayPunto = true;
+                                    i++;    // Ya acabo de analizar el char siguiente
+                                } else {
+                                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                            + ". Una expresión numérica decimal a operar, no contiene digitos despues del punto");
+                                    return null;
+                                }
+                            } else {
+                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". Una expresión numérica decimal a operar, contiene dos puntos");
+                                return null;
+                            }
+                        }
+                        //cifra += pCodigo.charAt(i);
+                        i++;
+                    } while (i < pCodigo.length() && (Character.isDigit(pCodigo.charAt(i)) || pCodigo.charAt(i) == '.'));
+
+                    // El do while se mueve hasta que no sea numero, pero el for va a mover otra
+                    // vez al siguiente, entonces elimino 1 iteracion para que se coloque en el ultimo numero
+                    i--;
+
+                    String tipoDato;
+                    // Obtengo el tipo de dato numerico
+                    if (hayPunto) {
+                        tipoDato = "decimal";
+                    } else {
+                        tipoDato = "entero";
+                    }
+
+                    // Verifica en cual variable se va a ingresar la variable
+                    if (Var1.equals("")) {
+                        Var1 = tipoDato;
+                    } else {
+                        // Verifica si hay operador en medio de la segunda expresion
+                        if (!operador.equals("")) {
+                            Var2 = tipoDato;
+                        } else {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". No se ha encontrado un operador entre las expresiones");
+                            return null;
+                        }
+                    }
+                } else if (pCodigo.charAt(i) == '@') {
+                    boolean hayCierre = false;
+                    i++;
+                    // Se recorre en busca del cierre del Texto
+                    while ((i < pCodigo.length()) && !hayCierre) {
+                        // Se encontro el cierre, cambia la var hay cierre a true
+                        if (pCodigo.charAt(i) == '@') {
+                            hayCierre = true;
+                        }
+                        i++;
+                    }
+                    // El while se mueve hasta que sea @, pero el for principal va a mover otra vez al 
+                    // siguiente, entonces elimino 1 iteracion para que se coloque en el ultimo numero
+                    i--;
+                    // Verifica si se encontro el cierre
+                    if (hayCierre) {
+                        // Verifica en cual variable se va a ingresar la variable
+                        if (Var1.equals("")) {
+                            Var1 = "Texto";
+                        } else {
+                            // Verifica si hay operador en medio de la segunda expresion
+                            if (!operador.equals("")) {
+                                Var2 = "Texto";
+                            } else {
+                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No se ha encontrado un operador entre las expresiones");
+                                return null;
+                            }
+                        }
+                    } else {
+                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". No se encuentra el caracter '@' de cierre del Texto");
+                        return null;
+                    }
+                } // Verifica si la expresion es un caracter, el cual comienza con &
+                else if (pCodigo.charAt(i) == '&') {
+                    // Verifica que el cierre del caracter se ubique dos espacios despues
+                    if ((i + 2) < pCodigo.length() && pCodigo.charAt(i + 2) == '&') {
+                        i = i + 2;  // Ubico el indice en el cierre &
+                        // Verifica en cual variable se va a ingresar la variable
+                        if (Var1.equals("")) {
+                            Var1 = "caracter";
+                        } else {
+                            // Verifica si hay operador en medio de la segunda expresion
+                            if (!operador.equals("")) {
+                                Var2 = "caracter";
+                            } else {
+                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No se ha encontrado un operador entre las expresiones");
+                                return null;
+                            }
+                        }
+                    } else {
+                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". La expresión contiene errores en la definicion de un 'caracter'");
+                        return null;
+                    }
+                } // Verifico si es un parentesis '['
+                else if (pCodigo.charAt(i) == '[') {
+                    // Hago el push del parentesis a la pila
+                    pilaParentesis.push("[");
+                    // Verifico si hay datos antes del parentesis para meterlos a la pila tambien
+                    if (!Var1.equals("")) {
+                        //  Verifico que haya un operador entre el parentesis y la variable
+                        if (!operador.equals("")) {
+                            // Hago el push a la pila de la variable 1 y el operador
+                            pilaParentesis.push(Var1);
+                            pilaParentesis.push(operador);
+                            // Quito los datos que ya estan en la pila
+                            Var1 = operador = "";
+                        } else {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". No hay un operador entre la variable y el parentesis '['");
+                            return null;
+                        }
+                    }
+                    continue;
+                } else if (pCodigo.charAt(i) == ']') {
+                    // Verifica que la lista de parentesis no este vacia para hacer el pop de '['
+                    if (!pilaParentesis.estaVacia()) {
+                        // La unica forma de que var1 sea vacia es xq se acaba de ingresar un '['
+                        // Se verifica que no este vacia
+                        if (!Var1.equals("")) {
+                            // Verifica si antes del ']' existe un operador (seria una ecuacion incompleta)
+                            if (!operador.equals("")) {
+                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No puede existir un operador justo antes de un corchete ']'");
+                                return null;
+                            } else {
+                                // El valor de arriba de la pila es un no. Realiza la expresion
+                                if (pilaParentesis.getValorEnTop().equals("no")) {
+                                    // Realizo la operacion del No
+                                    String resultado = verificarNo(Var1);
+                                    // Verifico el resultado de la operacion No
+                                    if (resultado == null) {
+                                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                                + ". La expresion sobre la que se va a realizar la operacion 'no', no es binaria");
+                                        return null;
+                                    } else {
+                                        Var1 = resultado;
+                                    }
+                                    pilaParentesis.pop();
+                                }
+                                // Verifica si hay una operacion antes del '[' en la pila
+                                if (!pilaParentesis.getValorEnTop().equals("[")) {
+                                    // Obtengo el operador
+                                    operador = pilaParentesis.getValorEnTop();
+                                    pilaParentesis.pop();
+                                    // Obtengo la expresion 1 que se va a operar
+                                    String var = pilaParentesis.getValorEnTop();
+                                    pilaParentesis.pop();
+                                    // Realizo la operacion
+                                    String resultado = verificarOperacion(var, operador, Var1);
+                                    // Verifico el resultado de la operacion (null si esta mala)
+                                    if (resultado == null) {
+                                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                                + ". Se esta realizando una operacion entre tipos incompatibles");
+                                        return null;
+                                    } else {
+                                        Var1 = resultado;
+                                        Var2 = operador = "";
+                                    }
+                                }
+                                // Saca el parentesis de la pila '['
+                                pilaParentesis.pop();
+                            }
+                        } else {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". Hay corchetes sin contenido dentro");
+                            return null;
+                        }
+                    } else {
+                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". Hay un corchete de cierre ']' de más");
+                        return null;
+                    }
+                    continue;
+                } // Verifica si es un operador el caracter que se analiza
+                else if (main.listaOperadores.esPalabraReservada(String.valueOf(pCodigo.charAt(i)))) {
+                    String ope = pCodigo.charAt(i) + "";
+                    // Verifico si es un operador de dos simbolos como >= o <>
+                    if ((i + 1) < pCodigo.length() && main.listaOperadores.esPalabraReservada(ope + pCodigo.charAt(i + 1))) {
+                        // Agrego el otro operador
+                        ope += pCodigo.charAt(i + 1);
+                        i++;
+                    }
+                    // Verifica que exista Var1, sobre quien se va a operar
+                    if (!Var1.equals("")) {
+                        // Verifica si no hay un operador para acomodar el actual ahi
+                        if (operador.equals("")) {
+                            operador = ope;
+                        } else {
+                            // Verifica si es un negativo
+                            if (ope.equals("-") && i < pCodigo.length() && Character.isDigit(pCodigo.charAt(i))) {
+                                negativo = true;
+                            } else {
+                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No pueden haber dos operadores seguidos");
+                                return null;
+                            }
+                        }
+                    } else {
+                        // Verifico si es un negativo
+                        if (ope.equals("-") && (i + 1) < pCodigo.length() && Character.isDigit(pCodigo.charAt(i + 1))) {
+                            negativo = true;
+                        } else {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". El operador '" + ope + "' debe ir en medio de una expresión, no al inicio");
+                            return null;
+                        }
+                    }
+                    continue;
+                } else if (pCodigo.charAt(i) == '!') {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". La expresión contiene un cierre de línea '!' inválido");
+                    return null;
+                } else {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". El caracter '" + pCodigo.charAt(i) + "' no se reconoce como una expresion válida");
+                    return null;
+                }
+
+                // Hay una operacion que realizar xq ya tengo dos expresiones y operador
+                if (!Var2.equals("")) {
+                    String resultado = verificarOperacion(Var1, operador, Var2);
+                    // Verifico el resultado de la operacion (null si esta mala)
+                    if (resultado == null) {
+                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". Operación inválida entre los tipos de datos '" + Var1 +"' y '" + Var2+"'.");
+                        return null;
+                    } else {
+                        Var1 = resultado;
+                        Var2 = operador = "";
+                    }
+                }
+            }
+        }
+
+        if (pilaParentesis.estaVacia() && !Var1.equals("") && operador.equals("")) {
+            return Var1;
+        } else if (!pilaParentesis.estaVacia()) {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". La expresión contiene corchetes que no han sido cerrados");
+            return null;
+        } else if (Var1.equals("")) {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". No hay ninguna expresion a evaluar o asignar");
+            return null;
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Hay un operador al final de la linea. Operador debe estar entre dos expresiones");
+            return null;
+        }
+    }
+
+    public boolean verificarImprimir(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        // Verifica que despues de 'imprimir' existe un espacio
+        if (pLineaCodigo.charAt(pPosicion) == ' ') {
+            pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
+            // Se busca el caracter de fin de linea '!'            
+            int posCierre = this.getFinLinea(pLineaCodigo, pPosicion);
             // Verifica que se haya encontrado el cierre de linea '!'
-            if(!cierreEncontrado){
+            if (posCierre == -1) {
                 System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
                         + ". No se ha encontrado el cierre de la línea '!'");
                 return false;
             }
-            
-            ///////////    Se busca el caracter de asignacion '='  /////////////
-            
+
+            /**
+             *
+             *
+             *
+             *
+             */
+            return true;
+
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Despues de la palabra impirmir, solo puede ir ' ' (espacio)");
+            return false;
+        }
+    }
+
+    public boolean realizarAsignacion(String pLineaCodigo, int pPosicion, int pNumeroLinea, String pTipoDato) {
+
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '=') {
+
+            pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
+
+            // Se busca el caracter de fin de linea '!'            
+            int posCierre = this.getFinLinea(pLineaCodigo, pPosicion);
+            // Verifica que se haya encontrado el cierre de linea '!'
+            if (posCierre == -1) {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No se ha encontrado el cierre de la línea '!'");
+                return false;
+            }
+
+            //    Se busca el caracter de asignacion '='            
             boolean igualEncontrado = false;
             // Recorre la linea de codigo en busca del '='
-            for (; pPosicion < ultimoChar; pPosicion++) {
+            for (; pPosicion < posCierre; pPosicion++) {
                 if (pLineaCodigo.charAt(pPosicion) != ' ') {
                     if (pLineaCodigo.charAt(pPosicion) == '=') {
                         igualEncontrado = true;
@@ -565,36 +1128,28 @@ public class SyntaxChecker {
             }
 
             // Esta es toda la equivalencia que voy a realizar sobre la variable
-            String equivalencia = pLineaCodigo.substring(pPosicion, ultimoChar);
-            
-            
-//            
-//
-//            pLineaCodigo = pLineaCodigo.substring(pPosicion);
-//            pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
-//            pLineaCodigo = pLineaCodigo.replaceAll("[", " [ ");
-//            pLineaCodigo = pLineaCodigo.replaceAll("]", " ] ");
-//            pLineaCodigo = pLineaCodigo.replaceAll("+", " + ");
-//            pLineaCodigo = pLineaCodigo.replaceAll("-", " - ");
-//            pLineaCodigo = pLineaCodigo.replaceAll("*", " * ");
-//            pLineaCodigo = pLineaCodigo.replaceAll("/", " / ");
-//            pLineaCodigo = pLineaCodigo.replaceAll("%", " % ");
-//
-//            pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
-//            pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
-//            pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
-//            pLineaCodigo = pLineaCodigo.replaceAll("!", " ! ");
-            return true;
+            String substring = pLineaCodigo.substring(pPosicion, posCierre);
+
+            // Manda a verificar la asignacion
+            String equivalencia = this.resolverEcuacion(substring, pNumeroLinea);
+
+            // Verifica que el dato a asignar sea igual al obtenido
+            if (equivalencia == null) {
+                return false;
+            } else if (equivalencia.equals(pTipoDato)) {
+                return true;
+            } else {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". Asignación incompatible. Está intentando asignar un '"
+                        + equivalencia + "' a un '" + pTipoDato + "'");
+                return false;
+            }
         } else {
             System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
                     + ". En la asignación de valores a una variable, no puede ir el"
                     + " caracter '" + pLineaCodigo.charAt(pPosicion) + "' después del nombre de la variable");
             return false;
         }
-    }
-
-    public boolean verificarImprimir() {
-        return true;
     }
 
     public boolean abrirMientras() {
