@@ -64,7 +64,7 @@ public class SyntaxChecker {
                     // Verifica si el caracter analizado es un espacio ubicado 
                     // despues de una palabra, si es un '[' o ':'
                     if ((lineaAnalizada.charAt(j) == ' ' || lineaAnalizada.charAt(j) == '['
-                            || lineaAnalizada.charAt(j) == ':' || lineaAnalizada.charAt(j) == '=')
+                            || lineaAnalizada.charAt(j) == ':' || lineaAnalizada.charAt(j) == '=' || lineaAnalizada.charAt(j) == '\t')
                             && !palabraAnalizada.equals("")) {
 
                         if (main.palabrasReservadas.esPalabraReservada(palabraAnalizada)) {
@@ -138,13 +138,32 @@ public class SyntaxChecker {
 //                                case "imprimirln":
 //                                    break;
                                 case "si":
-                                    break;
+                                    // Verifica la condicion
+                                    if (this.abrirSi(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        // Algo fallo
+                                        return;
+                                    }
                                 case "osi":
-                                    break;
+                                    if (comprobarOsi(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        return;
+                                    }
                                 case "sino":
-                                    break;
+                                    // No debe contener nada despues de el
+                                    if (comprobraSino(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        return;
+                                    }
                                 case "#si":
-                                    break;
+                                    if (this.cerrarSi(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        return;
+                                    }
                                 case "mientras":
                                     break;
                                 case "#mientras":
@@ -218,11 +237,11 @@ public class SyntaxChecker {
      */
     public boolean crearVariable(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea, String pTipoVariable) {
         // Verifica si despues de Texto, entero... el caracter existente es ' ' o ':' 
-        if (pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == ':') {
+        if (pLineaCodigo.charAt(pPosicionCaracter) == '\t' || pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == ':') {
             // Verifica si ya se abrio programa o en caso contrario la pila esta vacia
             if (pilaPalabrasReservadas.estaVacia()) {
                 System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                        + ". No es posible crear variables sin antes abrir la etiqueta programa");
+                        + ". No es posible crear variables sin antes abrir la etiqueta 'programa");
                 return false;
             } else {
                 // Corta la linea de codigo, despues de el tipo de variable a crear
@@ -385,7 +404,7 @@ public class SyntaxChecker {
      */
     public boolean abrirPrograma(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea) {
         // Verifica si el caracter seguido de la palabra reservada es ' ', '[' o ':'
-        if (pLineaCodigo.charAt(pPosicionCaracter) == ' ') {
+        if (pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == '\t') {
             // Verifica si ya existen palabras reservadas en la pila.
             if (!pilaPalabrasReservadas.estaVacia()) {
                 System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". La etiqueta "
@@ -480,7 +499,7 @@ public class SyntaxChecker {
      */
     public boolean cerrarPrograma(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea) {
         // Verifica que el caracter ubicado despues de #programa sea ' ' y no ':' o '['
-        if (pLineaCodigo.charAt(pPosicionCaracter) == ' ') {
+        if (pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == '\t') {
             // Verifica si hay palabras reservadas en la pila, sino, no existe 'programa'
             if (pilaPalabrasReservadas.estaVacia()) {
                 System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
@@ -489,8 +508,8 @@ public class SyntaxChecker {
             } // Verifica si en la pila de palabras solo esta "programa" o debe cerrar otras etiquetas
             else if (!pilaPalabrasReservadas.getValorEnTop().equals("programa")) {
                 System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                        + ". Primero debe cerrar " + pilaPalabrasReservadas.getValorEnTop() + " antes"
-                        + "de utilizar la etiqueta #programa");
+                        + ". Primero debe cerrar '" + pilaPalabrasReservadas.getValorEnTop() + "' antes"
+                        + " de utilizar la etiqueta #programa");
                 return false;
             } else {
                 // Verifica que no haya nada mas despues de #programa
@@ -531,12 +550,27 @@ public class SyntaxChecker {
      * analizar
      * @return el numero de linea donde esta el caracter '!' o -1 si no existe
      */
-    public int getFinLinea(String pCodigo, int pPosicionInicio) {
+    public int getCierreLinea(String pCodigo, int pPosicionInicio) {
         int ultimoChar = pCodigo.length() - 1;
         // Busca que exista el cierre de linea
         for (; ultimoChar > pPosicionInicio; ultimoChar--) {
-            if (pCodigo.charAt(ultimoChar) != ' ') {
+            if (pCodigo.charAt(ultimoChar) != ' ' && pCodigo.charAt(ultimoChar) != '\t') {
                 if (pCodigo.charAt(ultimoChar) == '!') {
+                    return ultimoChar;
+                } else {
+                    return -1;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public int getCierreCorchete(String pCodigo, int pPosicionInicio) {
+        int ultimoChar = pCodigo.length() - 1;
+        // Busca que exista el cierre de corchete
+        for (; ultimoChar > pPosicionInicio; ultimoChar--) {
+            if (pCodigo.charAt(ultimoChar) != ' ' && pCodigo.charAt(ultimoChar) != '\t') {
+                if (pCodigo.charAt(ultimoChar) == ']') {
                     return ultimoChar;
                 } else {
                     return -1;
@@ -666,6 +700,7 @@ public class SyntaxChecker {
         }
     }
 
+    // LISTO
     public String resolverEcuacion(String pCodigo, int pNumeroLinea) {
         boolean negativo = false;
         String Var1 = "";
@@ -675,7 +710,7 @@ public class SyntaxChecker {
 
         for (int i = 0; i < pCodigo.length(); i++) {
 
-            if (pCodigo.charAt(i) != ' ') {
+            if (pCodigo.charAt(i) != ' ' && pCodigo.charAt(i) != '\t') {
                 // Si es una letra, es porque es una variable o una palabra reservada
                 if (Character.isLetter(pCodigo.charAt(i))) {
 
@@ -743,11 +778,11 @@ public class SyntaxChecker {
                         else if (palabra.equals("no")) {
                             boolean hayCorchete = false;
                             // Busco si el caracter que sigue es '['
-                            while ((i+1) < pCodigo.length() && !hayCorchete) {
+                            while ((i + 1) < pCodigo.length() && !hayCorchete) {
                                 // Verifica si el proximo caracter no es espacio
-                                if (pCodigo.charAt(i+1) != ' ') {
+                                if (pCodigo.charAt(i + 1) != ' ') {
                                     // Verifica que el caracter sea '['
-                                    if (pCodigo.charAt(i+1) == '[') {
+                                    if (pCodigo.charAt(i + 1) == '[') {
                                         hayCorchete = true;
                                     } else {
                                         System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
@@ -1038,7 +1073,7 @@ public class SyntaxChecker {
                     // Verifico el resultado de la operacion (null si esta mala)
                     if (resultado == null) {
                         System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                + ". Operación inválida entre los tipos de datos '" + Var1 +"' y '" + Var2+"'.");
+                                + ". Operación inválida entre los tipos de datos '" + Var1 + "' y '" + Var2 + "'.");
                         return null;
                     } else {
                         Var1 = resultado;
@@ -1065,27 +1100,32 @@ public class SyntaxChecker {
         }
     }
 
+    // LISTO
     public boolean verificarImprimir(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         // Verifica que despues de 'imprimir' existe un espacio
-        if (pLineaCodigo.charAt(pPosicion) == ' ') {
-            pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
-            // Se busca el caracter de fin de linea '!'            
-            int posCierre = this.getFinLinea(pLineaCodigo, pPosicion);
-            // Verifica que se haya encontrado el cierre de linea '!'
-            if (posCierre == -1) {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                        + ". No se ha encontrado el cierre de la línea '!'");
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
+            // Verifica que se haya creado un programa
+            if (!pilaPalabrasReservadas.estaVacia()) {
+                pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
+                // Se busca el caracter de fin de linea '!'            
+                int posCierre = this.getCierreLinea(pLineaCodigo, pPosicion);
+                // Verifica que se haya encontrado el cierre de linea '!'
+                if (posCierre == -1) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". No se ha encontrado el cierre de la línea '!'");
+                    return false;
+                }
+                // obtiene la parte de texto donde esta la expresion que se va a imprimir
+                String expresion = pLineaCodigo.substring(pPosicion, posCierre);
+                // envia a revisar si la expresion a imprimir es correcta sintacticamente
+                String resultado = this.resolverEcuacion(expresion, pNumeroLinea);
+                // envia 
+                return resultado != null;
+            } else {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta imprimir sin antes crear un 'programa'");
                 return false;
             }
-
-            /**
-             *
-             *
-             *
-             *
-             */
-            return true;
-
         } else {
             System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
                     + ". Despues de la palabra impirmir, solo puede ir ' ' (espacio)");
@@ -1093,14 +1133,15 @@ public class SyntaxChecker {
         }
     }
 
+    // LISTO
     public boolean realizarAsignacion(String pLineaCodigo, int pPosicion, int pNumeroLinea, String pTipoDato) {
 
-        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '=') {
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '=' || pLineaCodigo.charAt(pPosicion) == '\t') {
 
             pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
 
             // Se busca el caracter de fin de linea '!'            
-            int posCierre = this.getFinLinea(pLineaCodigo, pPosicion);
+            int posCierre = this.getCierreLinea(pLineaCodigo, pPosicion);
             // Verifica que se haya encontrado el cierre de linea '!'
             if (posCierre == -1) {
                 System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
@@ -1168,12 +1209,218 @@ public class SyntaxChecker {
         return true;
     }
 
-    public boolean abrirSi() {
-        return true;
+    // Retorna la posicion donde esta el caracter '[' o -1 si no es el primero
+    // LISTO
+    public int getAperturaCorchete(String pLineaCodigo, int pPosicionInicial) {
+        while (pPosicionInicial < pLineaCodigo.length()) {
+            // Verifica que no sea un espacio
+            if (pLineaCodigo.charAt(pPosicionInicial) != ' ' && pLineaCodigo.charAt(pPosicionInicial) != '\t') {
+                if (pLineaCodigo.charAt(pPosicionInicial) == '[') {
+                    return pPosicionInicial;
+                } else {
+                    return -1;
+                }
+            }
+            pPosicionInicial++;
+        }
+        return -1;
     }
 
-    public boolean cerrarSi() {
-        return true;
+    // LISTO
+    public boolean abrirSi(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        // Verifica que se hay ingresado si despues de la palabra si habia un espacio o '['
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '[' || pLineaCodigo.charAt(pPosicion) == '\t') {
+
+            if (!pilaPalabrasReservadas.estaVacia()) {
+                // Cambio los tab por espacios
+                pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
+
+                int indiceApertura = this.getAperturaCorchete(pLineaCodigo, pPosicion);
+                // Verifica que haya un caracter de apertura
+                if (indiceApertura == -1) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". No se ha encontrado el caracter '[' despues del 'si'");
+                    return false;
+                }
+
+                // Se busca el caracter de cierre ']'            
+                int posCierre = this.getCierreCorchete(pLineaCodigo, pPosicion);
+                // Verifica que se haya encontrado el cierre ']'
+                if (posCierre == -1) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". El último caracter de la línea, no es el cierre del condicional si ']'");
+                    return false;
+                }
+                // Obtiene la parte de la condicion del si (+1 xq es en la posicion siguiente del '[')
+                String condicion = pLineaCodigo.substring(indiceApertura + 1, posCierre);
+                // Envia a evaluar la condicion
+                String evaluacionCondicion = this.resolverEcuacion(condicion, pNumeroLinea);
+
+                if (evaluacionCondicion == null) {
+                    return false;
+                } else if (!evaluacionCondicion.equals("binario")) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". La expresión a evaluar no es binaria");
+                    return false;
+                } else {
+                    pilaPalabrasReservadas.push("si");
+                    return true;
+                }
+            } else {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No es posible crear una condición 'si' antes de crear un programa");
+                return false;
+            }
+
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Despues de la palabra 'si', solo puede ir '[' o espacio(s)");
+            return false;
+        }
+    }
+
+    // LISTO
+    public boolean cerrarSi(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
+            // Verifica que se haya creado un programa
+            if (!pilaPalabrasReservadas.estaVacia()) {
+                // Verifica que sea "si" la etiqueta que este en el top de la pila
+                if (pilaPalabrasReservadas.getValorEnTop().equals("si")) {
+                    // Aumento pPosicion que estaba en un espacio
+                    pPosicion++;
+                    // Se verifica que no existan caracteres despues de '#si'
+                    while (pPosicion < pLineaCodigo.length()) {
+                        // Si no es un espacio lo que hay, es xq existe algo mas despues del #si
+                        if (pLineaCodigo.charAt(pPosicion) != ' ' && pLineaCodigo.charAt(pPosicion) != '\t') {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". Después de la etiqueta '#si' no puede haber ningún otro caracter");
+                            return false;
+                        }
+                        pPosicion++;
+                    }
+                    // Extrae la palabra reservada 'si' de la pila
+                    pilaPalabrasReservadas.pop();
+                    return true;
+
+                } else {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No se ha cerrado la etiqueta '" + pilaPalabrasReservadas.getValorEnTop()
+                            + "' . Asegurese de cerrarla antes de utilizar la etiqueta '#si'");
+                    return false;
+                }
+            } else {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta '#si' sin antes crear un 'programa'");
+                return false;
+            }
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra reservada '#si' no pueden haber mas caracteres");
+            return false;
+        }
+    }
+
+    // LISTO
+    public boolean comprobraSino(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
+            // Verifica que se haya creado un programa
+            if (!pilaPalabrasReservadas.estaVacia()) {
+                // Verifica que sea "si" la etiqueta que este en el top de la pila
+                if (pilaPalabrasReservadas.getValorEnTop().equals("si")) {
+                    // Aumento pPosicion que estaba en un espacio
+                    pPosicion++;
+                    // Se verifica que no existan caracteres despues de '#si'
+                    while (pPosicion < pLineaCodigo.length()) {
+                        // Si no es un espacio lo que hay, es xq existe algo mas despues del #si
+                        if (pLineaCodigo.charAt(pPosicion) != ' ' && pLineaCodigo.charAt(pPosicion) != '\t') {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". Después de la etiqueta 'sino' no puede haber ningún otro caracter");
+                            return false;
+                        }
+                        pPosicion++;
+                    }
+                    // Retorna true, ya que al final de la linea no habian caracteres
+                    return true;
+
+                } else {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No es posible utilizar la palabra reservada 'sino' sin antes haber"
+                            + " abierto un 'si'. Asegurese de cerrar '" + pilaPalabrasReservadas.getValorEnTop()
+                            + "' en caso que este se encuentre dentro del 'si'");
+                    return false;
+                }
+            } else {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta 'sino' sin antes crear un 'programa'");
+                return false;
+            }
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra reservada 'sino' no pueden haber mas caracteres");
+            return false;
+        }
+    }
+
+    // LISTO
+    public boolean comprobarOsi(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        // Verifica que se hay ingresado si despues de la palabra si habia un espacio o '['
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '[' || pLineaCodigo.charAt(pPosicion) == '\t') {
+            // Verifica que ya se haya abierto programa
+            if (!pilaPalabrasReservadas.estaVacia()) {
+
+                // Verifica que sea "si" la etiqueta que este en el top de la pila
+                if (pilaPalabrasReservadas.getValorEnTop().equals("si")) {
+                    // Cambio los tab por espacios
+                    pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
+
+                    int indiceApertura = this.getAperturaCorchete(pLineaCodigo, pPosicion);
+                    // Verifica que haya un caracter de apertura
+                    if (indiceApertura == -1) {
+                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". No se ha encontrado el caracter '[' despues del 'osi'");
+                        return false;
+                    }
+
+                    // Se busca el caracter de cierre ']'            
+                    int posCierre = this.getCierreCorchete(pLineaCodigo, pPosicion);
+                    // Verifica que se haya encontrado el cierre ']'
+                    if (posCierre == -1) {
+                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". El último caracter de la línea, no es el cierre del condicional osi ']'");
+                        return false;
+                    }
+                    // Obtiene la parte de la condicion del si (+1 xq es en la posicion siguiente del '[')
+                    String condicion = pLineaCodigo.substring(indiceApertura + 1, posCierre);
+                    // Envia a evaluar la condicion
+                    String evaluacionCondicion = this.resolverEcuacion(condicion, pNumeroLinea);
+
+                    if (evaluacionCondicion == null) {
+                        return false;
+                    } else if (!evaluacionCondicion.equals("binario")) {
+                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". La expresión a evaluar no es binaria");
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No es posible utilizar la palabra reservada 'osi' sin antes haber"
+                            + " abierto un 'si'. Asegurese de cerrar '" + pilaPalabrasReservadas.getValorEnTop()
+                            + "' en caso que este se encuentre dentro del 'si'");
+                    return false;
+                }
+            } else {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No es posible crear una condición 'osi' antes de crear un 'programa'");
+                return false;
+            }
+
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra 'osi', solo puede ir '[', espacio(s) o tab");
+            return false;
+        }
     }
 
     public boolean abrirRepita() {
