@@ -1193,12 +1193,98 @@ public class SyntaxChecker {
         }
     }
 
-    public boolean abrirMientras() {
-        return true;
+    // LISTO
+    public boolean abrirMientras(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        // Verifica que se hay ingresado si despues de la palabra si habia un espacio o '[' o un tab
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '[' || pLineaCodigo.charAt(pPosicion) == '\t') {
+
+            if (!pilaPalabrasReservadas.estaVacia()) {
+                // Cambio los tab por espacios
+                pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
+
+                int indiceApertura = this.getAperturaCorchete(pLineaCodigo, pPosicion);
+                // Verifica que haya un caracter de apertura
+                if (indiceApertura == -1) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". No se ha encontrado el caracter '[' despues del 'mientras'");
+                    return false;
+                }
+
+                // Se busca el caracter de cierre ']'            
+                int posCierre = this.getCierreCorchete(pLineaCodigo, pPosicion);
+                // Verifica que se haya encontrado el cierre ']'
+                if (posCierre == -1) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". El último caracter de la línea, no es el corchete de cierre ']' del ciclo mientras");
+                    return false;
+                }
+                // Obtiene la parte de la condicion del mientras (+1 xq es en la posicion siguiente del '[')
+                String condicion = pLineaCodigo.substring(indiceApertura + 1, posCierre);
+                // Envia a evaluar la condicion
+                String evaluacionCondicion = this.resolverEcuacion(condicion, pNumeroLinea);
+
+                if (evaluacionCondicion == null) {
+                    return false;
+                } else if (!evaluacionCondicion.equals("binario")) {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". La expresión a evaluar no es binaria");
+                    return false;
+                } else {
+                    pilaPalabrasReservadas.push("mientras");
+                    return true;
+                }
+            } else {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No es posible crear un ciclo 'mientras' antes de crear un programa");
+                return false;
+            }
+
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Despues de la palabra 'mientras', solo puede ir '[', espacio(s) o tabs");
+            return false;
+        }
     }
 
-    public boolean cerrarMientras() {
-        return true;
+    // LISTO
+    public boolean cerrarMientras(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
+            // Verifica que se haya creado un programa
+            if (!pilaPalabrasReservadas.estaVacia()) {
+                // Verifica que sea "mientras" la etiqueta que este en el top de la pila
+                if (pilaPalabrasReservadas.getValorEnTop().equals("mientras")) {
+                    // Aumento pPosicion que estaba en un espacio o un tab
+                    pPosicion++;
+                    // Se verifica que no existan caracteres despues de '#mientras'
+                    while (pPosicion < pLineaCodigo.length()) {
+                        // Si no es un espacio o un tab lo que hay, es xq existe algo mas despues del #mientras
+                        if (pLineaCodigo.charAt(pPosicion) != ' ' && pLineaCodigo.charAt(pPosicion) != '\t') {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". Después de la etiqueta '#mientras' no puede haber ningún otro caracter");
+                            return false;
+                        }
+                        pPosicion++;
+                    }
+                    // Extrae la palabra reservada 'mientras' de la pila
+                    pilaPalabrasReservadas.pop();
+                    return true;
+
+                } else {
+                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No se ha cerrado la etiqueta '" + pilaPalabrasReservadas.getValorEnTop()
+                            + "' . Asegurese de cerrarla antes de utilizar la etiqueta '#mientras'");
+                    return false;
+                }
+            } else {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta '#mientras' sin antes crear un 'programa'");
+                return false;
+            }
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra reservada '#mientras' no pueden haber más caracteres");
+            return false;
+        }
     }
 
     public boolean abrirPara() {
@@ -1423,8 +1509,36 @@ public class SyntaxChecker {
         }
     }
 
-    public boolean abrirRepita() {
-        return true;
+    // LISTO
+    public boolean abrirRepita(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
+            // Verifica que se haya creado un programa
+            if (!pilaPalabrasReservadas.estaVacia()) {                
+                    // Aumento pPosicion que estaba en un espacio
+                    pPosicion++;
+                    // Se verifica que no existan caracteres despues de 'repita'
+                    while (pPosicion < pLineaCodigo.length()) {
+                        // Si no es un espacio lo que hay, es xq existe algo mas despues del repita
+                        if (pLineaCodigo.charAt(pPosicion) != ' ' && pLineaCodigo.charAt(pPosicion) != '\t') {
+                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". Después de la etiqueta 'repita' no puede haber ningún otro caracter");
+                            return false;
+                        }
+                        pPosicion++;
+                    }
+                    // Ingresa la palabra 'repita' a la pila
+                    pilaPalabrasReservadas.push("repita");
+                    return true;                
+            } else {
+                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta 'repita' sin antes crear un 'programa'");
+                return false;
+            }
+        } else {
+            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra reservada 'repita' no pueden haber mas caracteres");
+            return false;
+        }
     }
 
     public boolean cerrarRepitaCuando() {
