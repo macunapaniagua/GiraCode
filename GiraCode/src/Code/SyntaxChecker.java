@@ -11,41 +11,29 @@ package Code;
  */
 public class SyntaxChecker {
 
-    private String codigo;
-    private boolean syntaxisCorrecta;
+    private String salidaRevision = "";
     private Pila pilaPalabrasReservadas;
-    private ListaCircular pilaDeErrores;
     private ListaSimpleVariables variables;
+
+    public String getSalidaRevision() {
+        return salidaRevision;
+    }
 
     /**
      * Metodo constructor que inicializa las variables
      *
-     * @param pCodigo codigo del programa
      */
-    public SyntaxChecker(String pCodigo) {
-        this.codigo = pCodigo;
-        syntaxisCorrecta = false;
-        pilaDeErrores = new ListaCircular();
+    public SyntaxChecker() {
         pilaPalabrasReservadas = new Pila();
         variables = new ListaSimpleVariables();
     }
 
     /**
-     * Metodo utilizado para indicar si la sintaxis del codigo es correcta o si
-     * contiene errores
-     *
-     * @return true si la sintaxis es correcta o false en caso contrario
-     */
-    public boolean isSyntaxisCorrecta() {
-        return syntaxisCorrecta;
-    }
-
-    /**
      * Metodo utilizado para verificar la sintaxis del codigo
      */
-    public void verificarCodigo() {
+    public void verificarCodigo(String pCodigo) {
         // Separo todo el documento por lineas de codigo (separado por '\n')
-        String[] lineas = codigo.split("\n");
+        String[] lineas = pCodigo.split("\n");
 
         // Analizo las lineas de codigo de una en una
         for (int i = 0; i < lineas.length; i++) {
@@ -165,25 +153,49 @@ public class SyntaxChecker {
                                         return;
                                     }
                                 case "mientras":
-                                    break;
+                                    if (this.abrirMientras(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        return;
+                                    }
                                 case "#mientras":
-                                    break;
+                                    if (this.cerrarMientras(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        return;
+                                    }
                                 case "para":
-                                    break;
+                                    if (this.abrirPara(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        return;
+                                    }
                                 case "#para":
-                                    break;
+                                    if (this.cerrarPara(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        return;
+                                    }
                                 case "repita":
-                                    break;
+                                    if (this.abrirRepita(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        return;
+                                    }
                                 case "#cuando":
-                                    break;
+                                    if (this.cerrarRepitaCuando(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        return;
+                                    }
                             }
                         } // Verifica si es una variable
                         else if (variables.existeVariable(palabraAnalizada)) {
                             System.out.println("Es variable");
                             // Verifica si la variable que se va a usar es el nombre de la clase
                             if (variables.getVariable(palabraAnalizada).getTipo().equals("clase")) {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + (i + 1)
-                                        + ". No se pueden realizar operaciones sobre el nombre de la clase");
+                                salidaRevision += "ERROR DE SINTAXIS en la linea " + (i + 1)
+                                        + ". No se pueden realizar operaciones sobre el nombre de la clase\n";
                                 return;
                             } else {
                                 // Verifica si la asignacion se ejecuto correctamente
@@ -195,9 +207,9 @@ public class SyntaxChecker {
                             }
                         } else {
                             // No se reconoce la palabra
-                            System.out.println("ERROR DE SINTAXIS en la linea " + (i + 1)
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + (i + 1)
                                     + ". No se reconoce la palabra '" + palabraAnalizada + "' como una sentencia válida"
-                                    + " o es una variable que no ha sido declarada");
+                                    + " o es una variable que no ha sido declarada\n";
                             return;
                         }
                         // Termina de analizar la linea de codigo actual para analizar la siguiente
@@ -215,11 +227,11 @@ public class SyntaxChecker {
         // Se verifica que la pila de palabras reservadas haya quedado vacia, lo que
         // indica que no quedaron etiquetas abiertas en el programa.
         if (pilaPalabrasReservadas.estaVacia()) {
-            syntaxisCorrecta = true;
+            salidaRevision += "Compilación correcta\n";
             variables = null;
         } else {
-            System.out.println("ERROR DE SINTAXIS. Aun no se ha cerrado la "
-                    + "etiqueta '" + pilaPalabrasReservadas.getValorEnTop() + '\'');
+            salidaRevision += "ERROR DE SINTAXIS. Aun no se ha cerrado la "
+                    + "etiqueta '" + pilaPalabrasReservadas.getValorEnTop() + "'\n";
         }
     }
 
@@ -240,8 +252,8 @@ public class SyntaxChecker {
         if (pLineaCodigo.charAt(pPosicionCaracter) == '\t' || pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == ':') {
             // Verifica si ya se abrio programa o en caso contrario la pila esta vacia
             if (pilaPalabrasReservadas.estaVacia()) {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                        + ". No es posible crear variables sin antes abrir la etiqueta 'programa");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible crear variables sin antes abrir la etiqueta 'programa\n";
                 return false;
             } else {
                 // Corta la linea de codigo, despues de el tipo de variable a crear
@@ -258,8 +270,8 @@ public class SyntaxChecker {
 
                 // Verifica que existan mas palabras en la linea para analizar
                 if (!(palabrasLinea.length > indiceAnalizado)) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                            + ". No se ha encontrado el caracter :: despues del tipo de variable a crear");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No se ha encontrado el caracter :: despues del tipo de variable a crear\n";
                     return false;
                 }
 
@@ -269,8 +281,8 @@ public class SyntaxChecker {
                     if (!palabrasLinea[indiceAnalizado].equals("")) {
                         // Verifica que la palabra sea unicamente "::"
                         if (!palabrasLinea[indiceAnalizado].equals("::")) {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                                    + ". No se ha encontrado el caracter :: despues del tipo de variable a crear");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". No se ha encontrado el caracter :: despues del tipo de variable a crear\n";
                             return false;
                         } else {
                             indiceAnalizado++;
@@ -281,8 +293,8 @@ public class SyntaxChecker {
 
                 // Verifica que existan mas palabras en la linea para analizar
                 if (!(palabrasLinea.length > indiceAnalizado)) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                            + ". No se ha especificado el nombre para la variable que se desea crear");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No se ha especificado el nombre para la variable que se desea crear\n";
                     return false;
                 }
 
@@ -294,20 +306,20 @@ public class SyntaxChecker {
                         nombreVariable = palabrasLinea[indiceAnalizado];
                         // Verifica si es ! y no escribio el nombre de la variable
                         if (nombreVariable.equals("!")) {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                                    + ". No se ha especificado el nombre de la variable");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". No se ha especificado el nombre de la variable\n";
                             return false;
                         } // Verifica si el primer caracter del nombre de la variable, es una letra
                         else if (!Character.isLetter(nombreVariable.charAt(0))) {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                                    + ". El nombre de una variable debe iniciar con una letra");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". El nombre de una variable debe iniciar con una letra\n";
                             return false;
                         } else {
                             // Se verifica que el nombre de la variable solo tenga numeros y letras
                             for (int i = 1; i < nombreVariable.length(); i++) {
                                 if (!Character.isLetter(nombreVariable.charAt(i)) && !Character.isDigit(nombreVariable.charAt(i))) {
-                                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                                            + ". El nombre de una variable debe contener únicamente números y letras");
+                                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                            + ". El nombre de una variable debe contener únicamente números y letras\n";
                                     return false;
                                 }
                             }
@@ -319,8 +331,8 @@ public class SyntaxChecker {
 
                 // Verifica que exista el cierre de linea
                 if (!(palabrasLinea.length > indiceAnalizado)) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                            + ". No se ha encontrado el cierre de línea '!'");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No se ha encontrado el cierre de línea '!'\n";
                     return false;
                 }
 
@@ -330,8 +342,8 @@ public class SyntaxChecker {
                     if (!palabrasLinea[indiceAnalizado].equals("")) {
                         // Verifica que la palabra sea unicamente "!"
                         if (!palabrasLinea[indiceAnalizado].equals("!")) {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                                    + ". No se ha encontrado el cierre de línea '!' después del nombre de la variable");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". No se ha encontrado el cierre de línea '!' después del nombre de la variable\n";
                             return false;
                         } else {
                             indiceAnalizado++;
@@ -344,21 +356,21 @@ public class SyntaxChecker {
                 for (; indiceAnalizado < palabrasLinea.length; indiceAnalizado++) {
                     // Realiza hasta que el campo no sea vacio
                     if (!palabrasLinea[indiceAnalizado].equals("")) {
-                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                                + ". No pueden haber caracteres ni palabres después del cierre de línea '!'");
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                + ". No pueden haber caracteres ni palabres después del cierre de línea '!'\n";
                         return false;
                     }
                 }
 
                 // Verifica si es una plabra reservada
                 if (main.palabrasReservadas.esPalabraReservada(nombreVariable)) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                            + ". El nombre que intenta darle a la variable es una palabra reservada");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". El nombre que intenta darle a la variable es una palabra reservada\n";
                     return false;
                 } // Verifica si ya existe una variable con ese nombre
                 else if (variables.existeVariable(nombreVariable)) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                            + ". Ya existe una variable o programa con el nombre '" + nombreVariable + "'");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". Ya existe una variable o programa con el nombre '" + nombreVariable + "'\n";
                     return false;
                 } else {
                     // AL FIN, AQUI SE INSERTA LA VARIABLE EN LA LISTA
@@ -384,10 +396,10 @@ public class SyntaxChecker {
             }
 
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
                     + ". Después de la etiqueta " + pTipoVariable + ", no se puede ubicar el "
                     + "caracter " + pLineaCodigo.charAt(pPosicionCaracter) + ""
-                    + ". La sintaxis correcta es: " + pTipoVariable + "::nombreVariable{=valor}!");
+                    + ". La sintaxis correcta es: " + pTipoVariable + "::nombreVariable!\n";
             return false;
         }
     }
@@ -407,8 +419,8 @@ public class SyntaxChecker {
         if (pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == '\t') {
             // Verifica si ya existen palabras reservadas en la pila.
             if (!pilaPalabrasReservadas.estaVacia()) {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". La etiqueta "
-                        + "programa ya ha sido creada y no es posible abrir dos en un mismo programa.");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". La etiqueta "
+                        + "programa ya ha sido creada y no es posible abrir dos en un mismo programa.\n";
                 return false;
             } else {
                 pPosicionCaracter++;
@@ -426,16 +438,16 @@ public class SyntaxChecker {
                         if (pLineaCodigo.charAt(pPosicionCaracter) != ' ' && pLineaCodigo.charAt(pPosicionCaracter) != '\t') {
                             // Verifica que el primer caracter del nombre sea una letra
                             if (nombrePrograma.equals("") && !Character.isLetter(pLineaCodigo.charAt(pPosicionCaracter))) {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". El nombre del "
+                                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". El nombre del "
                                         + "programa no puede comenzar con " + pLineaCodigo.charAt(pPosicionCaracter)
-                                        + ". El nombre del programa debe iniciar con una letra.");
+                                        + ". El nombre del programa debe iniciar con una letra.\n";
                                 return false;
                             } // Verifica que el nombre solo contenga letras y numeros
                             else if (!Character.isLetter(pLineaCodigo.charAt(pPosicionCaracter))
                                     && !Character.isDigit(pLineaCodigo.charAt(pPosicionCaracter))) {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". El nombre del "
+                                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". El nombre del "
                                         + "programa no puede contener el caracter " + pLineaCodigo.charAt(pPosicionCaracter)
-                                        + ". El nombre del programa solo puede conterner letras y números.");
+                                        + ". El nombre del programa solo puede conterner letras y números.\n";
                                 return false;
 
                             } else {
@@ -447,13 +459,13 @@ public class SyntaxChecker {
                 }
                 // Verifica que el nombre del programa no haya quedado en blanco
                 if (nombrePrograma.equals("")) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". "
-                            + "No se ha especificado el nombre del programa.");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". "
+                            + "No se ha especificado el nombre del programa.\n";
                     return false;
                 } // Verifica que el nombre del programa no sea una palabra reservada
                 else if (main.palabrasReservadas.esPalabraReservada(nombrePrograma)) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". "
-                            + "El nombre del programa no puede ser una palabra reservada");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". "
+                            + "El nombre del programa no puede ser una palabra reservada\n";
                     return false;
                 } else {
                     // Aqui verifica que no haya otro caracter despues del nombre del programa
@@ -467,8 +479,8 @@ public class SyntaxChecker {
                     // Verifica si el codigo posee algun caracter despues del nombre del programa
                     // y muestra el error o finaliza la insercion del programa de manera exitosa
                     if (otraLetra) {
-                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". El nombre del "
-                                + "programa no puede contener carácteres después de él.");
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". El nombre del "
+                                + "programa no puede contener carácteres después de él.\n";
                         return false;
                     } else {
                         // Escritura exitosa del nombre del programa.
@@ -479,10 +491,10 @@ public class SyntaxChecker {
                 }
             }
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
                     + ". Después de la etiqueta programa, no se puede ubicar el "
                     + "caracter " + pLineaCodigo.charAt(pPosicionCaracter) + ""
-                    + ". La sintaxis correcta es: programa nombrePrograma");
+                    + ". La sintaxis correcta es: programa nombrePrograma\n";
             return false;
         }
     }
@@ -502,14 +514,14 @@ public class SyntaxChecker {
         if (pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == '\t') {
             // Verifica si hay palabras reservadas en la pila, sino, no existe 'programa'
             if (pilaPalabrasReservadas.estaVacia()) {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                        + ". No se ha encontrado la etiqueta de inicio del programa");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No se ha encontrado la etiqueta de inicio del programa\n";
                 return false;
             } // Verifica si en la pila de palabras solo esta "programa" o debe cerrar otras etiquetas
             else if (!pilaPalabrasReservadas.getValorEnTop().equals("programa")) {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
                         + ". Primero debe cerrar '" + pilaPalabrasReservadas.getValorEnTop() + "' antes"
-                        + " de utilizar la etiqueta #programa");
+                        + " de utilizar la etiqueta #programa\n";
                 return false;
             } else {
                 // Verifica que no haya nada mas despues de #programa
@@ -524,8 +536,8 @@ public class SyntaxChecker {
                 // Verifica si el codigo posee algun caracter despues de #programa y muestra el error
                 //  o finaliza la revision del programa de manera exitosa
                 if (otraLetra) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". El cierre del "
-                            + "programa (#programa), no puede contener carácteres después de él.");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ". El cierre del "
+                            + "programa (#programa), no puede contener carácteres después de él.\n";
                     return false;
                 } else {
                     // Hace pop a la lista de palabras reservadas
@@ -534,10 +546,10 @@ public class SyntaxChecker {
                 }
             }
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
                     + ". Después de la etiqueta #programa, no se puede ubicar el "
                     + "caracter " + pLineaCodigo.charAt(pPosicionCaracter) + ""
-                    + ". La sintaxis correcta es: #programa");
+                    + ". La sintaxis correcta es: #programa\n";
             return false;
         }
     }
@@ -565,6 +577,7 @@ public class SyntaxChecker {
         return -1;
     }
 
+    // LISTO
     public int getCierreCorchete(String pCodigo, int pPosicionInicio) {
         int ultimoChar = pCodigo.length() - 1;
         // Busca que exista el cierre de corchete
@@ -580,6 +593,7 @@ public class SyntaxChecker {
         return -1;
     }
 
+    // LISTO
     public String verificarOperacion(String pVar1, String pOperador, String pVar2) {
         // Se va a retornar el tipo del valor si es correcta o null si es incorrecto
         switch (pOperador) {
@@ -692,6 +706,7 @@ public class SyntaxChecker {
         return null;
     }
 
+    // LISTO
     public String verificarNo(String pValor) {
         if (pValor.equals("binario")) {
             return "binario";
@@ -729,18 +744,24 @@ public class SyntaxChecker {
                     if (variables.existeVariable(palabra)) {
                         // Obtiene el tipo de dato de la variable
                         String tipo = variables.getVariable(palabra).getTipo();
-                        // Verifica en cual variable se va a ingresar la variable
-                        if (Var1.equals("")) {
-                            Var1 = tipo;
-                        } else {
-                            // Verifica si hay operador en medio de la segunda expresion
-                            if (!operador.equals("")) {
-                                Var2 = tipo;
+                        if (!tipo.equals("clase")) {
+                            // Verifica en cual variable se va a ingresar la variable
+                            if (Var1.equals("")) {
+                                Var1 = tipo;
                             } else {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                        + ". No se ha encontrado un operador entre las expresiones");
-                                return null;
+                                // Verifica si hay operador en medio de la segunda expresion
+                                if (!operador.equals("")) {
+                                    Var2 = tipo;
+                                } else {
+                                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                            + ". No se ha encontrado un operador entre las expresiones\n";
+                                    return null;
+                                }
                             }
+                        } else {
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". No se pueden realizar operaciones sobre el nombre del programa\n";
+                            return null;
                         }
                     } // Verifica si es una palabra reservada la variable (verdadero, falso, o, y, no)
                     else if (main.palabrasReservadas.esPalabraReservada(palabra)) {
@@ -753,8 +774,8 @@ public class SyntaxChecker {
                                 if (!operador.equals("")) {
                                     Var2 = "binario";
                                 } else {
-                                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                            + ". No se ha encontrado un operador entre las expresiones");
+                                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                            + ". No se ha encontrado un operador entre las expresiones\n";
                                     return null;
                                 }
                             }
@@ -765,13 +786,13 @@ public class SyntaxChecker {
                                 if (operador.equals("")) {
                                     operador = palabra;
                                 } else {
-                                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                            + ". No pueden haber dos operadores seguidos");
+                                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                            + ". No pueden haber dos operadores seguidos\n";
                                     return null;
                                 }
                             } else {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                        + ". El operador binario '" + palabra + "' debe ir en medio de una expresión, no al inicio");
+                                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". El operador binario '" + palabra + "' debe ir en medio de una expresión, no al inicio\n";
                                 return null;
                             }
                         } // El operador binario es un no
@@ -785,8 +806,8 @@ public class SyntaxChecker {
                                     if (pCodigo.charAt(i + 1) == '[') {
                                         hayCorchete = true;
                                     } else {
-                                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                                + ". Seguido del operador binario 'no', solo se puede ubicar un '['");
+                                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                                + ". Seguido del operador binario 'no', solo se puede ubicar un '['\n";
                                         return null;
                                     }
                                 }
@@ -803,28 +824,28 @@ public class SyntaxChecker {
                                         pilaParentesis.push(operador);
                                         Var1 = operador = "";
                                     } else {
-                                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                                + ". No hay un operador entre la variable y el operador 'no['");
+                                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                                + ". No hay un operador entre la variable y el operador 'no['\n";
                                         return null;
                                     }
                                 }
                                 // Hago el push del no
                                 pilaParentesis.push("no");
                             } else {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                        + ". No se encuentra el caracter '[' seguido del operador binario 'no'");
+                                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No se encuentra el caracter '[' seguido del operador binario 'no'\n";
                                 return null;
                             }
                         } // La palabra reservada no es operable y no es un operador
                         else {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                    + ". La palabra reservada '" + palabra + "' no es válida en este contexto");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". La palabra reservada '" + palabra + "' no es válida en este contexto\n";
                             return null;
                         }
                     } // La palabra no se reconoce en el programa
                     else {
-                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                + ". La variable '" + palabra + "' no ha sido declarada en el programa");
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". La variable '" + palabra + "' no ha sido declarada en el programa\n";
                         return null;
                     }
                 } else if (Character.isDigit(pCodigo.charAt(i))) {
@@ -846,13 +867,13 @@ public class SyntaxChecker {
                                     hayPunto = true;
                                     i++;    // Ya acabo de analizar el char siguiente
                                 } else {
-                                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                            + ". Una expresión numérica decimal a operar, no contiene digitos despues del punto");
+                                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                            + ". Una expresión numérica decimal a operar, no contiene digitos despues del punto\n";
                                     return null;
                                 }
                             } else {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                        + ". Una expresión numérica decimal a operar, contiene dos puntos");
+                                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". Una expresión numérica decimal a operar, contiene dos puntos\n";
                                 return null;
                             }
                         }
@@ -880,8 +901,8 @@ public class SyntaxChecker {
                         if (!operador.equals("")) {
                             Var2 = tipoDato;
                         } else {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                    + ". No se ha encontrado un operador entre las expresiones");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". No se ha encontrado un operador entre las expresiones\n";
                             return null;
                         }
                     }
@@ -909,14 +930,14 @@ public class SyntaxChecker {
                             if (!operador.equals("")) {
                                 Var2 = "Texto";
                             } else {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                        + ". No se ha encontrado un operador entre las expresiones");
+                                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No se ha encontrado un operador entre las expresiones\n";
                                 return null;
                             }
                         }
                     } else {
-                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                + ". No se encuentra el caracter '@' de cierre del Texto");
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". No se encuentra el caracter '@' de cierre del Texto\n";
                         return null;
                     }
                 } // Verifica si la expresion es un caracter, el cual comienza con &
@@ -932,14 +953,14 @@ public class SyntaxChecker {
                             if (!operador.equals("")) {
                                 Var2 = "caracter";
                             } else {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                        + ". No se ha encontrado un operador entre las expresiones");
+                                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No se ha encontrado un operador entre las expresiones\n";
                                 return null;
                             }
                         }
                     } else {
-                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                + ". La expresión contiene errores en la definicion de un 'caracter'");
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". La expresión contiene errores en la definicion de un 'caracter'\n";
                         return null;
                     }
                 } // Verifico si es un parentesis '['
@@ -956,8 +977,8 @@ public class SyntaxChecker {
                             // Quito los datos que ya estan en la pila
                             Var1 = operador = "";
                         } else {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                    + ". No hay un operador entre la variable y el parentesis '['");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". No hay un operador entre la variable y el parentesis '['\n";
                             return null;
                         }
                     }
@@ -970,8 +991,8 @@ public class SyntaxChecker {
                         if (!Var1.equals("")) {
                             // Verifica si antes del ']' existe un operador (seria una ecuacion incompleta)
                             if (!operador.equals("")) {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                        + ". No puede existir un operador justo antes de un corchete ']'");
+                                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No puede existir un operador justo antes de un corchete ']'\n";
                                 return null;
                             } else {
                                 // El valor de arriba de la pila es un no. Realiza la expresion
@@ -980,8 +1001,8 @@ public class SyntaxChecker {
                                     String resultado = verificarNo(Var1);
                                     // Verifico el resultado de la operacion No
                                     if (resultado == null) {
-                                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                                + ". La expresion sobre la que se va a realizar la operacion 'no', no es binaria");
+                                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                                + ". La expresion sobre la que se va a realizar la operacion 'no', no es binaria\n";
                                         return null;
                                     } else {
                                         Var1 = resultado;
@@ -1000,8 +1021,8 @@ public class SyntaxChecker {
                                     String resultado = verificarOperacion(var, operador, Var1);
                                     // Verifico el resultado de la operacion (null si esta mala)
                                     if (resultado == null) {
-                                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                                + ". Se esta realizando una operacion entre tipos incompatibles");
+                                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                                + ". Se esta realizando una operacion entre tipos incompatibles\n";
                                         return null;
                                     } else {
                                         Var1 = resultado;
@@ -1012,13 +1033,13 @@ public class SyntaxChecker {
                                 pilaParentesis.pop();
                             }
                         } else {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                    + ". Hay corchetes sin contenido dentro");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". Hay corchetes sin contenido dentro\n";
                             return null;
                         }
                     } else {
-                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                + ". Hay un corchete de cierre ']' de más");
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". Hay un corchete de cierre ']' de más\n";
                         return null;
                     }
                     continue;
@@ -1038,11 +1059,11 @@ public class SyntaxChecker {
                             operador = ope;
                         } else {
                             // Verifica si es un negativo
-                            if (ope.equals("-") && i < pCodigo.length() && Character.isDigit(pCodigo.charAt(i))) {
+                            if (ope.equals("-") && i + 1 < pCodigo.length() && Character.isDigit(pCodigo.charAt(i + 1))) {
                                 negativo = true;
                             } else {
-                                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                        + ". No pueden haber dos operadores seguidos");
+                                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                        + ". No pueden haber dos operadores seguidos\n";
                                 return null;
                             }
                         }
@@ -1051,19 +1072,19 @@ public class SyntaxChecker {
                         if (ope.equals("-") && (i + 1) < pCodigo.length() && Character.isDigit(pCodigo.charAt(i + 1))) {
                             negativo = true;
                         } else {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                    + ". El operador '" + ope + "' debe ir en medio de una expresión, no al inicio");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                    + ". El operador '" + ope + "' debe ir en medio de una expresión, no al inicio\n";
                             return null;
                         }
                     }
                     continue;
                 } else if (pCodigo.charAt(i) == '!') {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". La expresión contiene un cierre de línea '!' inválido");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". La expresión contiene un cierre de línea '!' inválido\n";
                     return null;
                 } else {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". El caracter '" + pCodigo.charAt(i) + "' no se reconoce como una expresion válida");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". El caracter '" + pCodigo.charAt(i) + "' no se reconoce como una expresion válida\n";
                     return null;
                 }
 
@@ -1072,8 +1093,8 @@ public class SyntaxChecker {
                     String resultado = verificarOperacion(Var1, operador, Var2);
                     // Verifico el resultado de la operacion (null si esta mala)
                     if (resultado == null) {
-                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                + ". Operación inválida entre los tipos de datos '" + Var1 + "' y '" + Var2 + "'.");
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". Operación inválida entre los tipos de datos '" + Var1 + "' y '" + Var2 + "'.\n";
                         return null;
                     } else {
                         Var1 = resultado;
@@ -1086,16 +1107,16 @@ public class SyntaxChecker {
         if (pilaParentesis.estaVacia() && !Var1.equals("") && operador.equals("")) {
             return Var1;
         } else if (!pilaParentesis.estaVacia()) {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". La expresión contiene corchetes que no han sido cerrados");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". La expresión contiene corchetes que no han sido cerrados\n";
             return null;
         } else if (Var1.equals("")) {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". No hay ninguna expresion a evaluar o asignar");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". No hay ninguna expresion a evaluar o asignar\n";
             return null;
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". Hay un operador al final de la linea. Operador debe estar entre dos expresiones");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Hay un operador al final de la linea. Operador debe estar entre dos expresiones\n";
             return null;
         }
     }
@@ -1111,8 +1132,8 @@ public class SyntaxChecker {
                 int posCierre = this.getCierreLinea(pLineaCodigo, pPosicion);
                 // Verifica que se haya encontrado el cierre de linea '!'
                 if (posCierre == -1) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". No se ha encontrado el cierre de la línea '!'");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". No se ha encontrado el cierre de la línea '!'\n";
                     return false;
                 }
                 // obtiene la parte de texto donde esta la expresion que se va a imprimir
@@ -1122,13 +1143,13 @@ public class SyntaxChecker {
                 // envia 
                 return resultado != null;
             } else {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                        + ". No es posible utilizar la etiqueta imprimir sin antes crear un 'programa'");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta imprimir sin antes crear un 'programa'\n";
                 return false;
             }
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". Despues de la palabra impirmir, solo puede ir ' ' (espacio)");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Despues de la palabra impirmir, solo puede ir ' ' (espacio)\n";
             return false;
         }
     }
@@ -1144,8 +1165,8 @@ public class SyntaxChecker {
             int posCierre = this.getCierreLinea(pLineaCodigo, pPosicion);
             // Verifica que se haya encontrado el cierre de linea '!'
             if (posCierre == -1) {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                        + ". No se ha encontrado el cierre de la línea '!'");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No se ha encontrado el cierre de la línea '!'\n";
                 return false;
             }
 
@@ -1163,8 +1184,8 @@ public class SyntaxChecker {
             }
             // Verifica si no hay un '=' y envia el error de sintaxis
             if (!igualEncontrado) {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                        + ". No se ha encontrado el '=' después del nombre de la variable");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No se ha encontrado el '=' después del nombre de la variable\n";
                 return false;
             }
 
@@ -1180,15 +1201,15 @@ public class SyntaxChecker {
             } else if (equivalencia.equals(pTipoDato)) {
                 return true;
             } else {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
                         + ". Asignación incompatible. Está intentando asignar un '"
-                        + equivalencia + "' a un '" + pTipoDato + "'");
+                        + equivalencia + "' a un '" + pTipoDato + "'\n";
                 return false;
             }
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
                     + ". En la asignación de valores a una variable, no puede ir el"
-                    + " caracter '" + pLineaCodigo.charAt(pPosicion) + "' después del nombre de la variable");
+                    + " caracter '" + pLineaCodigo.charAt(pPosicion) + "' después del nombre de la variable\n";
             return false;
         }
     }
@@ -1205,8 +1226,8 @@ public class SyntaxChecker {
                 int indiceApertura = this.getAperturaCorchete(pLineaCodigo, pPosicion);
                 // Verifica que haya un caracter de apertura
                 if (indiceApertura == -1) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". No se ha encontrado el caracter '[' despues del 'mientras'");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". No se ha encontrado el caracter '[' despues del 'mientras'\n";
                     return false;
                 }
 
@@ -1214,8 +1235,8 @@ public class SyntaxChecker {
                 int posCierre = this.getCierreCorchete(pLineaCodigo, pPosicion);
                 // Verifica que se haya encontrado el cierre ']'
                 if (posCierre == -1) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". El último caracter de la línea, no es el corchete de cierre ']' del ciclo mientras");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". El último caracter de la línea, no es el corchete de cierre ']' del ciclo mientras\n";
                     return false;
                 }
                 // Obtiene la parte de la condicion del mientras (+1 xq es en la posicion siguiente del '[')
@@ -1226,22 +1247,22 @@ public class SyntaxChecker {
                 if (evaluacionCondicion == null) {
                     return false;
                 } else if (!evaluacionCondicion.equals("binario")) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". La expresión a evaluar no es binaria");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". La expresión a evaluar no es binaria\n";
                     return false;
                 } else {
                     pilaPalabrasReservadas.push("mientras");
                     return true;
                 }
             } else {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                        + ". No es posible crear un ciclo 'mientras' antes de crear un programa");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No es posible crear un ciclo 'mientras' antes de crear un programa\n";
                 return false;
             }
 
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". Despues de la palabra 'mientras', solo puede ir '[', espacio(s) o tabs");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Despues de la palabra 'mientras', solo puede ir '[', espacio(s) o tabs\n";
             return false;
         }
     }
@@ -1259,8 +1280,8 @@ public class SyntaxChecker {
                     while (pPosicion < pLineaCodigo.length()) {
                         // Si no es un espacio o un tab lo que hay, es xq existe algo mas despues del #mientras
                         if (pLineaCodigo.charAt(pPosicion) != ' ' && pLineaCodigo.charAt(pPosicion) != '\t') {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                                    + ". Después de la etiqueta '#mientras' no puede haber ningún otro caracter");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". Después de la etiqueta '#mientras' no puede haber ningún otro caracter\n";
                             return false;
                         }
                         pPosicion++;
@@ -1270,29 +1291,21 @@ public class SyntaxChecker {
                     return true;
 
                 } else {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
                             + ". No se ha cerrado la etiqueta '" + pilaPalabrasReservadas.getValorEnTop()
-                            + "' . Asegurese de cerrarla antes de utilizar la etiqueta '#mientras'");
+                            + "' . Asegurese de cerrarla antes de utilizar la etiqueta '#mientras'\n";
                     return false;
                 }
             } else {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                        + ". No es posible utilizar la etiqueta '#mientras' sin antes crear un 'programa'");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta '#mientras' sin antes crear un 'programa'\n";
                 return false;
             }
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". Después de la palabra reservada '#mientras' no pueden haber más caracteres");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra reservada '#mientras' no pueden haber más caracteres\n";
             return false;
         }
-    }
-
-    public boolean abrirPara() {
-        return true;
-    }
-
-    public boolean cerrarPara() {
-        return true;
     }
 
     // Retorna la posicion donde esta el caracter '[' o -1 si no es el primero
@@ -1324,8 +1337,8 @@ public class SyntaxChecker {
                 int indiceApertura = this.getAperturaCorchete(pLineaCodigo, pPosicion);
                 // Verifica que haya un caracter de apertura
                 if (indiceApertura == -1) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". No se ha encontrado el caracter '[' despues del 'si'");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". No se ha encontrado el caracter '[' despues del 'si'\n";
                     return false;
                 }
 
@@ -1333,8 +1346,8 @@ public class SyntaxChecker {
                 int posCierre = this.getCierreCorchete(pLineaCodigo, pPosicion);
                 // Verifica que se haya encontrado el cierre ']'
                 if (posCierre == -1) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". El último caracter de la línea, no es el cierre del condicional si ']'");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". El último caracter de la línea, no es el cierre del condicional si ']'\n";
                     return false;
                 }
                 // Obtiene la parte de la condicion del si (+1 xq es en la posicion siguiente del '[')
@@ -1345,22 +1358,22 @@ public class SyntaxChecker {
                 if (evaluacionCondicion == null) {
                     return false;
                 } else if (!evaluacionCondicion.equals("binario")) {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". La expresión a evaluar no es binaria");
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". La expresión a evaluar no es binaria\n";
                     return false;
                 } else {
                     pilaPalabrasReservadas.push("si");
                     return true;
                 }
             } else {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                        + ". No es posible crear una condición 'si' antes de crear un programa");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No es posible crear una condición 'si' antes de crear un programa\n";
                 return false;
             }
 
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". Despues de la palabra 'si', solo puede ir '[' o espacio(s)");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Despues de la palabra 'si', solo puede ir '[' o espacio(s)\n";
             return false;
         }
     }
@@ -1378,8 +1391,8 @@ public class SyntaxChecker {
                     while (pPosicion < pLineaCodigo.length()) {
                         // Si no es un espacio lo que hay, es xq existe algo mas despues del #si
                         if (pLineaCodigo.charAt(pPosicion) != ' ' && pLineaCodigo.charAt(pPosicion) != '\t') {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                                    + ". Después de la etiqueta '#si' no puede haber ningún otro caracter");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". Después de la etiqueta '#si' no puede haber ningún otro caracter\n";
                             return false;
                         }
                         pPosicion++;
@@ -1389,19 +1402,19 @@ public class SyntaxChecker {
                     return true;
 
                 } else {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
                             + ". No se ha cerrado la etiqueta '" + pilaPalabrasReservadas.getValorEnTop()
-                            + "' . Asegurese de cerrarla antes de utilizar la etiqueta '#si'");
+                            + "' . Asegurese de cerrarla antes de utilizar la etiqueta '#si'\n";
                     return false;
                 }
             } else {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                        + ". No es posible utilizar la etiqueta '#si' sin antes crear un 'programa'");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta '#si' sin antes crear un 'programa'\n";
                 return false;
             }
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". Después de la palabra reservada '#si' no pueden haber mas caracteres");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra reservada '#si' no pueden haber mas caracteres\n";
             return false;
         }
     }
@@ -1419,8 +1432,8 @@ public class SyntaxChecker {
                     while (pPosicion < pLineaCodigo.length()) {
                         // Si no es un espacio lo que hay, es xq existe algo mas despues del #si
                         if (pLineaCodigo.charAt(pPosicion) != ' ' && pLineaCodigo.charAt(pPosicion) != '\t') {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                                    + ". Después de la etiqueta 'sino' no puede haber ningún otro caracter");
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". Después de la etiqueta 'sino' no puede haber ningún otro caracter\n";
                             return false;
                         }
                         pPosicion++;
@@ -1429,20 +1442,20 @@ public class SyntaxChecker {
                     return true;
 
                 } else {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
                             + ". No es posible utilizar la palabra reservada 'sino' sin antes haber"
                             + " abierto un 'si'. Asegurese de cerrar '" + pilaPalabrasReservadas.getValorEnTop()
-                            + "' en caso que este se encuentre dentro del 'si'");
+                            + "' en caso que este se encuentre dentro del 'si'\n";
                     return false;
                 }
             } else {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                        + ". No es posible utilizar la etiqueta 'sino' sin antes crear un 'programa'");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta 'sino' sin antes crear un 'programa'\n";
                 return false;
             }
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". Después de la palabra reservada 'sino' no pueden haber mas caracteres");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra reservada 'sino' no pueden haber mas caracteres\n";
             return false;
         }
     }
@@ -1462,8 +1475,8 @@ public class SyntaxChecker {
                     int indiceApertura = this.getAperturaCorchete(pLineaCodigo, pPosicion);
                     // Verifica que haya un caracter de apertura
                     if (indiceApertura == -1) {
-                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                + ". No se ha encontrado el caracter '[' despues del 'osi'");
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". No se ha encontrado el caracter '[' despues del 'osi'\n";
                         return false;
                     }
 
@@ -1471,8 +1484,8 @@ public class SyntaxChecker {
                     int posCierre = this.getCierreCorchete(pLineaCodigo, pPosicion);
                     // Verifica que se haya encontrado el cierre ']'
                     if (posCierre == -1) {
-                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                + ". El último caracter de la línea, no es el cierre del condicional osi ']'");
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". El último caracter de la línea, no es el cierre del condicional osi ']'\n";
                         return false;
                     }
                     // Obtiene la parte de la condicion del si (+1 xq es en la posicion siguiente del '[')
@@ -1483,28 +1496,28 @@ public class SyntaxChecker {
                     if (evaluacionCondicion == null) {
                         return false;
                     } else if (!evaluacionCondicion.equals("binario")) {
-                        System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                                + ". La expresión a evaluar no es binaria");
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". La expresión a evaluar no es binaria\n";
                         return false;
                     } else {
                         return true;
                     }
                 } else {
-                    System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
                             + ". No es posible utilizar la palabra reservada 'osi' sin antes haber"
                             + " abierto un 'si'. Asegurese de cerrar '" + pilaPalabrasReservadas.getValorEnTop()
-                            + "' en caso que este se encuentre dentro del 'si'");
+                            + "' en caso que este se encuentre dentro del 'si'\n";
                     return false;
                 }
             } else {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                        + ". No es posible crear una condición 'osi' antes de crear un 'programa'");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No es posible crear una condición 'osi' antes de crear un 'programa'\n";
                 return false;
             }
 
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". Después de la palabra 'osi', solo puede ir '[', espacio(s) o tab");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra 'osi', solo puede ir '[', espacio(s) o tab\n";
             return false;
         }
     }
@@ -1513,36 +1526,256 @@ public class SyntaxChecker {
     public boolean abrirRepita(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
             // Verifica que se haya creado un programa
-            if (!pilaPalabrasReservadas.estaVacia()) {                
-                    // Aumento pPosicion que estaba en un espacio
-                    pPosicion++;
-                    // Se verifica que no existan caracteres despues de 'repita'
-                    while (pPosicion < pLineaCodigo.length()) {
-                        // Si no es un espacio lo que hay, es xq existe algo mas despues del repita
-                        if (pLineaCodigo.charAt(pPosicion) != ' ' && pLineaCodigo.charAt(pPosicion) != '\t') {
-                            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                                    + ". Después de la etiqueta 'repita' no puede haber ningún otro caracter");
-                            return false;
-                        }
-                        pPosicion++;
+            if (!pilaPalabrasReservadas.estaVacia()) {
+                // Aumento pPosicion que estaba en un espacio
+                pPosicion++;
+                // Se verifica que no existan caracteres despues de 'repita'
+                while (pPosicion < pLineaCodigo.length()) {
+                    // Si no es un espacio lo que hay, es xq existe algo mas despues del repita
+                    if (pLineaCodigo.charAt(pPosicion) != ' ' && pLineaCodigo.charAt(pPosicion) != '\t') {
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                + ". Después de la etiqueta 'repita' no puede haber ningún otro caracter\n";
+                        return false;
                     }
-                    // Ingresa la palabra 'repita' a la pila
-                    pilaPalabrasReservadas.push("repita");
-                    return true;                
+                    pPosicion++;
+                }
+                // Ingresa la palabra 'repita' a la pila
+                pilaPalabrasReservadas.push("repita");
+                return true;
             } else {
-                System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea
-                        + ". No es posible utilizar la etiqueta 'repita' sin antes crear un 'programa'");
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta 'repita' sin antes crear un 'programa'\n";
                 return false;
             }
         } else {
-            System.out.println("ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                    + ". Después de la palabra reservada 'repita' no pueden haber mas caracteres");
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra reservada 'repita' no pueden haber mas caracteres\n";
             return false;
         }
     }
 
-    public boolean cerrarRepitaCuando() {
-        return true;
+    // LISTO
+    public boolean cerrarRepitaCuando(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        // Verifica que se hay ingresado si despues de la palabra #cuando habia un espacio o '[' o tab
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '[' || pLineaCodigo.charAt(pPosicion) == '\t') {
+            // Verifica que ya se haya abierto programa
+            if (!pilaPalabrasReservadas.estaVacia()) {
+                // Verifica que sea "repita" la etiqueta que este en el top de la pila
+                if (pilaPalabrasReservadas.getValorEnTop().equals("repita")) {
+                    // Cambio los tab por espacios
+                    pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
+
+                    // Busca el corchete de apertura de la condicion
+                    int indiceApertura = this.getAperturaCorchete(pLineaCodigo, pPosicion);
+                    // Verifica que haya un caracter de apertura
+                    if (indiceApertura == -1) {
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". No se ha encontrado el caracter '[' despues del '#cuando'\n";
+                        return false;
+                    }
+
+                    // Se busca el caracter de cierre ']'            
+                    int posCierre = this.getCierreCorchete(pLineaCodigo, pPosicion);
+                    // Verifica que se haya encontrado el cierre ']'
+                    if (posCierre == -1) {
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". El último caracter de la línea, no es el cierre de la condicion #cuando ']'\n";
+                        return false;
+                    }
+
+                    // Obtiene la parte de la condicion del cuando (+1 xq es en la posicion siguiente del '[')
+                    String condicion = pLineaCodigo.substring(indiceApertura + 1, posCierre);
+                    // Envia a evaluar la condicion
+                    String evaluacionCondicion = this.resolverEcuacion(condicion, pNumeroLinea);
+                    if (evaluacionCondicion == null) {
+                        return false;
+                    } else if (!evaluacionCondicion.equals("binario")) {
+                        salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                                + ". La expresión a evaluar no es binaria\n";
+                        return false;
+                    } else {
+                        // Remueve el 'repita' de la pila de operadores
+                        pilaPalabrasReservadas.pop();
+                        return true;
+                    }
+                } else {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No es posible utilizar la palabra reservada '#cuando' sin antes haber"
+                            + " abierto un 'repita'. Asegurese de cerrar '" + pilaPalabrasReservadas.getValorEnTop()
+                            + "' en caso que este se encuentre dentro del 'repita'\n";
+                    return false;
+                }
+            } else {
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No es posible cerrar un ciclo con '#cuando' sin antes crear un 'repita'\n";
+                return false;
+            }
+
+        } else {
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra '#cuando', solo puede ir '[', espacio(s) o tab\n";
+            return false;
+        }
     }
 
+    // LISTO
+    public boolean abrirPara(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        // Verifica que se hay ingresado si despues de la palabra si habia un espacio o '[' o un tab
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '[' || pLineaCodigo.charAt(pPosicion) == '\t') {
+            if (!pilaPalabrasReservadas.estaVacia()) {
+                // Cambio los tab por espacios
+                pLineaCodigo = pLineaCodigo.replaceAll("\t", " ");
+
+                int indiceApertura = this.getAperturaCorchete(pLineaCodigo, pPosicion);
+                // Verifica que haya un caracter de apertura
+                if (indiceApertura == -1) {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". No se ha encontrado el caracter '[' despues del 'para'\n";
+                    return false;
+                }
+
+                // Se busca el caracter de cierre ']'            
+                int posCierre = this.getCierreCorchete(pLineaCodigo, pPosicion);
+                // Verifica que se haya encontrado el cierre ']'
+                if (posCierre == -1) {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". No se ha cerrado el corchete ']' en la expresion del ciclo 'para'\n";
+                    return false;
+                }
+
+                // Busca el separador de la condicion y la asignacion posterior del ciclo '$'
+                int posSeparador = pLineaCodigo.indexOf('$');
+                // Verifica que dentro de la condicion, se encuentre el caracter '$'
+                if (posSeparador == -1) {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". El caracter $ que separa la condicion y la asignacion posterior del ciclo 'para',"
+                            + " no se ha encontrado\n";
+                    return false;
+                }
+
+                // Obtiene la parte de la condicion del para (+1 xq es en la posicion siguiente del '[')
+                String condicion = pLineaCodigo.substring(indiceApertura + 1, posSeparador);
+                // Envia a evaluar la condicion
+                String evaluacionCondicion = this.resolverEcuacion(condicion, pNumeroLinea);
+
+                if (evaluacionCondicion == null) {
+                    return false;
+                } else if (!evaluacionCondicion.equals("binario")) {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". La expresión a evaluar no es binaria\n";
+                    return false;
+                }
+
+                // Obtengo la asignacion que se va a hacer depues de cada iteracion
+                String asignacionPosterior = pLineaCodigo.substring(posSeparador + 1, posCierre);
+                // Obtiene la posicion donde se encuentra el igual en la asignacion
+                int posIgual = asignacionPosterior.indexOf('=');
+                // Verifica que dentro de la asignacion, se encuentre el caracter '='
+                if (posIgual == -1) {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". No se ha encontrado una asignacion posterior '=' en el ciclo' para'\n";
+                    return false;
+                }
+
+                String variable = "";
+                // Busca el nombre de la variable que se encuentra antes del '='
+                asigna:
+                for (int firstLetter = 0; firstLetter < posIgual; firstLetter++) {
+                    if (asignacionPosterior.charAt(firstLetter) != ' ') {
+                        // Busca la ultima letra del nombre de la variable
+                        for (int lastLetter = posIgual - 1; lastLetter > firstLetter; lastLetter--) {
+                            if (asignacionPosterior.charAt(lastLetter) != ' ') {
+                                variable = asignacionPosterior.substring(firstLetter, lastLetter + 1);
+                                break asigna;
+                            }
+                        }
+                        variable = String.valueOf(asignacionPosterior.charAt(firstLetter));
+                        break;
+                    }
+                }
+
+                // Verifica que se le haya asignado un nombre a la variable
+                if (variable.equals("")) {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". No se ha especificado una variable antes del signo igual\n";
+                    return false;
+                }
+
+                // Verifica si la variable de la asignacion posterior a la iteracion no se ha declarado aun
+                if (!variables.existeVariable(variable)) {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". La variable '" + variable + "' en la asignacion del 'para' no ha sido declarada\n";
+                    return false;
+                }
+
+                String asignacion = asignacionPosterior.substring(posIgual + 1);
+                // Envia a evaluar la expresion que coincida con el mismo tipo de dato de la variable
+                evaluacionCondicion = this.resolverEcuacion(asignacion, pNumeroLinea);
+
+                // Verifica que la igualdad coincida con el tipo de dato de la variable
+                if (evaluacionCondicion == null) {
+                    return false;
+                } else if (!evaluacionCondicion.equals(variables.getVariable(variable).getTipo())) {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                            + ". El tipo de dato que desea asignar en el 'para' despues de cada ciclo, no"
+                            + " coincide con el tipo de dato de la variable\n";
+                    return false;
+                } else {
+                    pilaPalabrasReservadas.push("para");
+                    return true;
+                }
+
+            } else {
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                        + ". No es posible crear un ciclo 'para' sin antes haber creado un 'programa'\n";
+                return false;
+            }
+
+        } else {
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Despues de la palabra 'para', solo puede ir '[', espacio(s) o tabs\n";
+            return false;
+        }
+    }
+
+    // LISTO
+    public boolean cerrarPara(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+        if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
+            // Verifica que se haya creado un programa
+            if (!pilaPalabrasReservadas.estaVacia()) {
+                // Verifica que sea "para" la etiqueta que este en el top de la pila
+                if (pilaPalabrasReservadas.getValorEnTop().equals("para")) {
+                    // Aumento pPosicion que estaba en un espacio
+                    pPosicion++;
+                    // Se verifica que no existan caracteres despues de '#para'
+                    while (pPosicion < pLineaCodigo.length()) {
+                        // Si no es un espacio lo que hay, es xq existe algo mas despues del #para
+                        if (pLineaCodigo.charAt(pPosicion) != ' ' && pLineaCodigo.charAt(pPosicion) != '\t') {
+                            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                                    + ". Después de la etiqueta '#para' no puede haber ningún otro caracter\n";
+                            return false;
+                        }
+                        pPosicion++;
+                    }
+                    // Extrae la palabra reservada 'para' de la pila
+                    pilaPalabrasReservadas.pop();
+                    return true;
+
+                } else {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No se ha cerrado la etiqueta '" + pilaPalabrasReservadas.getValorEnTop()
+                            + "' . Asegurese de cerrarla antes de utilizar la etiqueta '#para'\n";
+                    return false;
+                }
+            } else {
+                salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                        + ". No es posible utilizar la etiqueta '#para' sin antes crear un ciclo 'para'\n";
+                return false;
+            }
+        } else {
+            salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
+                    + ". Después de la palabra reservada '#para' no pueden haber mas caracteres\n";
+            return false;
+        }
+    }
 }

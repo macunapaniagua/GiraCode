@@ -5,6 +5,7 @@
  */
 package GUI;
 
+import Code.Interprete;
 import Code.SyntaxChecker;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
@@ -38,6 +39,12 @@ public class IDE extends javax.swing.JFrame {
         styleReservada = Txt_Editor.addStyle("Palabra reservada", null);
         StyleConstants.setForeground(styleReservada, Color.BLUE);
         //StyleConstants.setBold(styleReservada, true);
+        
+        styleCodigoOK = Txt_Output.addStyle("Codigo OK", null);
+        StyleConstants.setForeground(styleCodigoOK, Color.GREEN);
+        
+        styleCodigoOK = Txt_Output.addStyle("Codigo Fail", null);
+        StyleConstants.setForeground(styleCodigoOK, Color.RED);
     }
 
     /**
@@ -307,11 +314,18 @@ public class IDE extends javax.swing.JFrame {
 
     private void Lbl_EjecutarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_EjecutarMouseClicked
         JOptionPane.showMessageDialog(this, "Acaba de hacer click en ejecutar");
+                
+        Interprete corrida = new Interprete();
+        Document salida = Txt_Output.getDocument();
 
-        // Limpia el campo de salida para una nueva ejecucion.
-        Document documento = Txt_Output.getDocument();
+        // Limpia el campo de salida para una nueva ejecucion.        
         try {
-            documento.remove(0, documento.getLength());
+            salida.remove(0, salida.getLength());
+            
+            corrida.ejecutarCodigo(Txt_Editor.getDocument().getText(0, Txt_Editor.getDocument().getLength()));
+            salida.insertString(0, corrida.getErrores().toString(), styleReservada);
+            
+            
         } catch (BadLocationException ex) { }
     }//GEN-LAST:event_Lbl_EjecutarMouseClicked
 
@@ -322,17 +336,20 @@ public class IDE extends javax.swing.JFrame {
             // Obtiene todo el codigo del Editor
             String codigo = documento.getText(0, documento.getLength());
 
-            SyntaxChecker checker = new SyntaxChecker(codigo);
-            checker.verificarCodigo();
+            SyntaxChecker checker = new SyntaxChecker();
+            checker.verificarCodigo(codigo);
             
             // Borra el texto que haya en la salida
             Txt_Output.getDocument().remove(0, Txt_Output.getDocument().getLength());
-            // Verifica si el codigo esta bueno o no
-            if(checker.isSyntaxisCorrecta()){                
-                Lbl_Ejecutar.setEnabled(true);                
-            }else{                
-                Txt_Output.getDocument().insertString(0, "Hay algun error", styleReservada);
+            
+            // Pega la salida en la consola
+            if(checker.getSalidaRevision().equals("Compilación correcta\n")){
+                Lbl_Ejecutar.setEnabled(true);
+                Txt_Output.getDocument().insertString(0, checker.getSalidaRevision(), Txt_Editor.getStyle("Palabra reservada"));
+            }else{
+                Txt_Output.getDocument().insertString(0, checker.getSalidaRevision(), Txt_Output.getStyle("Codigo Fail"));
             }
+            
 
         } catch (BadLocationException ex) {
         }

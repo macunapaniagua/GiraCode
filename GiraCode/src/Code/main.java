@@ -26,8 +26,6 @@ public class main {
         listaOperadores = new ListaDoble();
 
         //******************* INSERCION DE PALABRAS RESERVADAS *****************
-        palabrasReservadas.imprimirListaDoble();
-
         // Inicio y fin de de programa
         palabrasReservadas.insertarAlInicio("programa", "class");
         palabrasReservadas.insertarAlInicio("#programa", "");
@@ -59,19 +57,9 @@ public class main {
         // Operadores Binarios
         palabrasReservadas.insertarAlInicio("o", "||");
         palabrasReservadas.insertarAlInicio("y", "&&");
-        palabrasReservadas.insertarAlInicio("no", "!");
+        palabrasReservadas.insertarAlInicio("no", "!");        
         
-        
-//////        // Fin de linea        
-//        listaOperadores.insertarAlInicio("!", ";");        
-//////        
-//////        // Caracteres especiales
-//////        listaOperadores.insertarAlInicio("[", "(");
-//////        listaOperadores.insertarAlInicio("]", ")");
-//////        listaOperadores.insertarAlInicio("$", "");
-//        listaOperadores.insertarAlInicio("::", "");
-//////        
-//////        // Operadores binarios
+        // Operadores
         listaOperadores.insertarAlInicio("+", "+");
         listaOperadores.insertarAlInicio("-", "-");
         listaOperadores.insertarAlInicio("*", "*");
@@ -83,17 +71,6 @@ public class main {
         listaOperadores.insertarAlInicio(">", ">");
         listaOperadores.insertarAlInicio("<=", "<=");
         listaOperadores.insertarAlInicio(">=", ">=");
-        
-        
-        palabrasReservadas.imprimirListaDoble();
-        System.out.println("");
-        listaOperadores.imprimirListaDoble();
-        //**********************************************************************
-
-        System.out.println("Palabra mientras: " + palabrasReservadas.esPalabraReservada("mientras"));
-        System.out.println(palabrasReservadas.getPalabraReservadaJava("mientras"));
-        System.out.println("Palabra repita: " + palabrasReservadas.esPalabraReservada("repita"));
-        System.out.println(palabrasReservadas.getPalabraReservadaJava("repita"));
 
         IDE ventana = new IDE();
         ventana.setVisible(true);
