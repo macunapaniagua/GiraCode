@@ -71,7 +71,7 @@ public class ListaCircular {
     }
 
     /**
-     * Metodo utilizado para imprimir los valores que se encuentran en la lista 
+     * Metodo utilizado para imprimir los valores que se encuentran en la lista
      * circular.
      */
     public void imprimirListaCircular() {
@@ -85,5 +85,18 @@ public class ListaCircular {
             System.out.println("La lista circular se encuentra vacía");
         }
     }
-    
+
+    public String getDatos() {
+        String respuesta = "";
+        // Recorre la lista circular hacia atras
+        if (raiz != null) {
+            NodoDoble recorrido = raiz;
+            do {
+                respuesta += recorrido.getClave() + '\n';
+                recorrido = (NodoDoble) recorrido.getSiguiente();
+            } while (!recorrido.equals(raiz));
+        }
+        return respuesta;
+    }
+
 }

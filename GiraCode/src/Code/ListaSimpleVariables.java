@@ -93,11 +93,9 @@ public class ListaSimpleVariables {
                 recorrido = (NodoVariable) recorrido.getSiguiente();
             }
             if (recorrido.getClave().equals(pNombre)) {
-                // Crea un nuevo nodo con los datos de la variable buscada
-                respuesta = new NodoVariable(recorrido.getClave(), recorrido.getValor(), recorrido.getTipo());
+                respuesta = recorrido;
             }
         }
-
         return respuesta;
     }
 

@@ -385,10 +385,10 @@ public class SyntaxChecker {
                             variables.insertar(nombreVariable, "0.0", pTipoVariable);
                             break;
                         case "binario":
-                            variables.insertar(nombreVariable, "false", pTipoVariable);
+                            variables.insertar(nombreVariable, "falso", pTipoVariable);
                             break;
                         case "caracter":
-                            variables.insertar(nombreVariable, "", pTipoVariable);
+                            variables.insertar(nombreVariable, "_", pTipoVariable);
                             break;
                     }
                     return true;

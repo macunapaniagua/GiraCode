@@ -5,6 +5,7 @@
  */
 package Code;
 
+import java.util.ArrayList;
 import javax.swing.text.Document;
 
 /**
@@ -15,20 +16,13 @@ public class Interprete {
 
     ListaSimpleVariables variables;
     ListaCircular errores;
-    String salida = "";
 
     public ListaCircular getErrores() {
         return errores;
     }
-    
-    public String getSalida() {
-        return salida;
-    }
 
     /**
      * Metodo constructor
-     *
-     * @param pSalida Document del texto de salida
      */
     public Interprete() {
         errores = new ListaCircular();
@@ -56,7 +50,7 @@ public class Interprete {
         return firstWord;
     }
 
-    public void ejecutarCodigo(String pGiraCODE) {
+    public boolean ejecutarCodigo(String pGiraCODE) {
         // Separa el codigo por lineas (\n)
         String[] codeLines = pGiraCODE.split("\n");
         // Analiza cada linea
@@ -68,8 +62,9 @@ public class Interprete {
                 // Variables que almacenan la posicion de inicio y la sig palabra
                 int posNextWord;
                 String nextWord;
+                String primeraPalabra = getFirstWord(codeLine);
                 // Busca la primera palabra de la linea de codigo y compara cual es
-                switch (getFirstWord(codeLine)) {
+                switch (primeraPalabra) {
                     case "programa":
                         // Busco el nombre del programa y lo agrego en la lista de variabes
                         String nombrePrograma = codeLine.substring(("programa").length()).trim();
@@ -116,37 +111,75 @@ public class Interprete {
                             break;
                         } else {
                             // Algo fallo al imprimir
-                            return;
+                            return false;
                         }
+                    case "para":
+                        // Obtiene el codigo de la condicion y la asignacion posterior
+                        String condicion = codeLine.substring(codeLine.indexOf("[") + 1, codeLine.length() - 1).trim();
+
+                        int paraAbiertos = 1;
+                        String codigoPara = "";
+
+                        // Obtiene todo el bloque  para
+                        while (paraAbiertos > 0) {
+                            // Obtiene la primera palabra de la linea de codigo 
+                            codeLine = codeLines[++i].trim();
+                            primeraPalabra = getFirstWord(codeLine);
+
+                            if (primeraPalabra.equals("para")) {
+                                paraAbiertos++;
+                                codigoPara += codeLine + "\n";
+                            } else if (primeraPalabra.equals("#para") && (paraAbiertos - 1) == 0) {
+                                paraAbiertos--;
+                            } else {
+                                if (primeraPalabra.equals("#para")) {
+                                    paraAbiertos--;
+                                }
+                                codigoPara += codeLine + "\n";
+                            }
+                        }
+                        if (cicloPara(condicion, codigoPara)) {
+                            break;
+                        }
+                        return false;
+
+                    case "si":
+                        ArrayList<String> bloqueIf = new ArrayList<>();
+                        bloqueIf.add(codeLine);
+                        int ifAbiertos = 1;
+                        // Obtiene todo el bloque de codigo del condicional SI
+                        do {
+                            codeLine = codeLines[++i].trim();
+                            primeraPalabra = getFirstWord(codeLine);
+                            if (primeraPalabra.equals("si")) {
+                                ifAbiertos++;
+                            } else if (primeraPalabra.equals("#si")) {
+                                ifAbiertos--;
+                            }
+                            bloqueIf.add(codeLine);
+                        } while (ifAbiertos >= 1);
+                        // Manda a realizar el bloque si y verifica el resultado devuelto
+                        if (condicionIf(bloqueIf)) {
+                            break;
+                        } else {
+                            return false;
+                        }
+
+                    // Es una variable
+                    default:
+                        posNextWord = codeLine.indexOf("=") + ("=").length();
+                        nextWord = codeLine.substring(posNextWord, codeLine.length() - 1).trim();
+
+                        if (this.realizarAsignacion(nextWord, i + 1, primeraPalabra)) {
+                            break;
+                        } else {
+                            // Algo fallo (division por 0)
+                            return false;
+                        }
+
 ////////                                case "imprimirln":
 ////////                                    break;
-//////                    case "si":
-//////                        // Verifica la condicion
-//////                        if (this.abrirSi(lineaAnalizada, j, i + 1)) {
-//////                            break;
-//////                        } else {
-//////                            // Algo fallo
-//////                            return;
-//////                        }
-//////                    case "osi":
-//////                        if (comprobarOsi(lineaAnalizada, j, i + 1)) {
-//////                            break;
-//////                        } else {
-//////                            return;
-//////                        }
-//////                    case "sino":
-//////                        // No debe contener nada despues de el
-//////                        if (comprobraSino(lineaAnalizada, j, i + 1)) {
-//////                            break;
-//////                        } else {
-//////                            return;
-//////                        }
-//////                    case "#si":
-//////                        if (this.cerrarSi(lineaAnalizada, j, i + 1)) {
-//////                            break;
-//////                        } else {
-//////                            return;
-//////                        }
+//////                    
 //////                    case "mientras":
 //////                        if (this.abrirMientras(lineaAnalizada, j, i + 1)) {
 //////                            break;
@@ -158,19 +191,7 @@ public class Interprete {
 //////                            break;
 //////                        } else {
 //////                            return;
-//////                        }
-//////                    case "para":
-//////                        if (this.abrirPara(lineaAnalizada, j, i + 1)) {
-//////                            break;
-//////                        } else {
-//////                            return;
-//////                        }
-//////                    case "#para":
-//////                        if (this.cerrarPara(lineaAnalizada, j, i + 1)) {
-//////                            break;
-//////                        } else {
-//////                            return;
-//////                        }
+//////                        }                  
 //////                    case "repita":
 //////                        if (this.abrirRepita(lineaAnalizada, j, i + 1)) {
 //////                            break;
@@ -183,67 +204,140 @@ public class Interprete {
 //////                        } else {
 //////                            return;
 //////                        }
-
                 }
-
-////                for (int j = 0; j < lineaAnalizada.length(); j++) {
-////
-////                    // Verifica si el caracter analizado es un espacio ubicado 
-////                    // despues de una palabra, si es un '[' o ':'
-////                    if ((lineaAnalizada.charAt(j) == ' ' || lineaAnalizada.charAt(j) == '['
-////                            || lineaAnalizada.charAt(j) == ':' || lineaAnalizada.charAt(j) == '=' || lineaAnalizada.charAt(j) == '\t')
-////                            && !palabraAnalizada.equals("")) {
-////
-////                        if (main.palabrasReservadas.esPalabraReservada(palabraAnalizada)) {
-////                            // La palabra analizada es una palabra reservada
-////                            System.out.println(palabraAnalizada + " es palabra reservada");
-////                            switch (palabraAnalizada) {
-////
-////                            }
-////                        } // Verifica si es una variable
-////                        else if (variables.existeVariable(palabraAnalizada)) {
-////                            System.out.println("Es variable");
-////                            // Verifica si la variable que se va a usar es el nombre de la clase
-////                            if (variables.getVariable(palabraAnalizada).getTipo().equals("clase")) {
-////                                System.out.println("ERROR DE SINTAXIS en la linea " + (i + 1)
-////                                        + ". No se pueden realizar operaciones sobre el nombre de la clase");
-////                                return;
-////                            } else {
-////                                // Verifica si la asignacion se ejecuto correctamente
-////                                if (realizarAsignacion(lineaAnalizada, j, (i + 1), variables.getVariable(palabraAnalizada).getTipo())) {
-////                                    break;
-////                                } else {
-////                                    return;
-////                                }
-////                            }
-////                        } else {
-////                            // No se reconoce la palabra
-////                            System.out.println("ERROR DE SINTAXIS en la linea " + (i + 1)
-////                                    + ". No se reconoce la palabra '" + palabraAnalizada + "' como una sentencia válida"
-////                                    + " o es una variable que no ha sido declarada");
-////                            return;
-////                        }
-////                        // Termina de analizar la linea de codigo actual para analizar la siguiente
-////                        break;
-////
-////                    } else {
-////                        // Ignora los espacios en blanco seguidos y los tab
-////                        if (lineaAnalizada.charAt(j) != ' ' && lineaAnalizada.charAt(j) != '\t') {
-////                            palabraAnalizada += lineaAnalizada.charAt(j);
-////                        }
-////                    }
-////                }
             }
         }
-        variables = null;
+        return true;
     }
 
+    public boolean condicionIf(ArrayList<String> pBloqueIf) {
+        int indiceBloque = 0;
+        // Obtiene la linea de codigo del condicional if y seguidamente su condicion y aumenta una unidad el indiceBloque
+        String codeLine = pBloqueIf.get(indiceBloque);
+        String condicion = codeLine.substring(codeLine.indexOf("[") + 1, codeLine.length() - 1);
+        String condicionEvaluada = resolverEcuacion(condicion, 100);
+
+        if (condicionEvaluada == null) {
+            return false;
+        } else if (condicionEvaluada.equals("verdad")) {
+            int siAbiertos = 1;
+            String firstWord;
+            String codigoSi = "";
+            // Recorre todo el bloque hasta que se encuentre el cierre del condicional if
+            while (true) {
+                // Obtiene la linea a analizar y la primera palabra de esta
+                codeLine = pBloqueIf.get(++indiceBloque);
+                firstWord = getFirstWord(codeLine);
+                // Verifica la primera palabra para ver si continua el bloque del si o acaba
+                if (firstWord.equals("si")) {
+                    siAbiertos++;
+                } else if (siAbiertos == 1 && (firstWord.equals("sino")
+                        || firstWord.equals("osi") || firstWord.equals("#si"))) {
+                    break;
+                } else if (firstWord.equals("#si")) {
+                    siAbiertos--;
+                }
+                codigoSi += codeLine + "\n";
+            }
+            return ejecutarCodigo(codigoSi);
+            // resolver casos "osi" y "sino";
+        } else {
+            // Elimina el "si" del codigo
+            pBloqueIf.remove(indiceBloque);
+            String firstWord;
+            int siAbiertos = 1;
+            // Elimina todas las lineas innecesarias del si/osi
+            while (true) {
+                firstWord = getFirstWord(pBloqueIf.get(indiceBloque));
+                // Verifica la primera palabra
+                if (firstWord.equals("si")) {
+                    siAbiertos++;
+                } else if (siAbiertos == 1 && (firstWord.equals("sino")
+                        || firstWord.equals("osi") || firstWord.equals("#si"))) {
+                    break;
+                } else if (firstWord.equals("#si")) {
+                    siAbiertos--;
+                }
+                pBloqueIf.remove(indiceBloque);
+            }
+
+            if (firstWord.equals("sino")) {
+                // Cambia el sino por sino[verdad] para que se ejecute si o si
+                pBloqueIf.set(indiceBloque, pBloqueIf.get(indiceBloque) + "[verdad]");
+                return condicionIf(pBloqueIf);
+            } else if (firstWord.equals("osi")) {
+                return condicionIf(pBloqueIf);
+            } else {
+                // Es el ultimo #si -> el ciclo se ejuto de manera exitosa
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Metodo utilizado para ejecutar un ciclo for
+     *
+     * @param pCondicion condicion del ciclo y postAsignacion
+     * @param pCodigo codigo a ejecutar en el ciclo
+     * @return true si el resultado del ciclo fue exitoso o false en caso
+     * contrario
+     */
+    public boolean cicloPara(String pCondicion, String pCodigo) {
+        // Obtiene la condicion y la variable a la que se va a asignar el valor posterior
+        String condicion = pCondicion.substring(0, pCondicion.indexOf("$")).trim();
+        int posVariable = pCondicion.indexOf("$") + 1;
+        String varAsignacion = pCondicion.substring(posVariable, pCondicion.indexOf("=", posVariable)).trim();
+        String asignacion = pCondicion.substring(pCondicion.indexOf("=", posVariable) + 1).trim();
+        // Aqui se ejecuta el codigo repetitivo
+        while (resolverEcuacion(condicion, 100).equals("verdad")) {
+            // Manda a ejecutar el codigo del ciclo
+            if (ejecutarCodigo(pCodigo) == false) {
+                return false;
+            }
+            // Realiza la asignacion y verifica que se haya realizado exitosamente
+            if (realizarAsignacion(asignacion, 100, varAsignacion) == false) {
+                return false;
+            }
+        }
+        return resolverEcuacion(condicion, 100).equals("falso");
+    }
+
+    /**
+     * Metodo utilizado para enviar a imprimir una expresion
+     *
+     * @param pLineaCodigo linea de codigo que contiene la expresion a imprimir
+     * @param pNumeroLinea numero de linea, el cual se indica en caso de error
+     * @return true si se imprime correctamente o false si ocurrio un error
+     */
     public boolean imprimir(String pLineaCodigo, int pNumeroLinea) {
         String resultado = this.resolverEcuacion(pLineaCodigo, pNumeroLinea);
         if (resultado == null) {
             return false;
         } else {
-            salida += resultado + "\n";
+            errores.insertar("Se imprimio: " + resultado);
+            return true;
+        }
+    }
+
+    /**
+     * Metodo utilizado para asignarle un valor a una variable
+     *
+     * @param pLineaCodigo Codigo con la expresion que se le va a asignar a la
+     * variable
+     * @param pNumeroLinea Numero de linea donde se realiza la asignacion
+     * @param pVariable Nombre de la variable a la que se le va a asignar un
+     * valor
+     * @return true si la asignacion se lleva a cabo con exito o false en caso
+     * contrario
+     */
+    public boolean realizarAsignacion(String pLineaCodigo, int pNumeroLinea, String pVariable) {
+        // Manda a realizar las posibles operaciones para obtener el dato unico a asignar
+        String resultado = this.resolverEcuacion(pLineaCodigo, pNumeroLinea);
+        if (resultado == null) {
+            return false;
+        } else {
+            variables.getVariable(pVariable).setValor(resultado);
+            errores.insertar("Se ha asignado a la variable '" + pVariable + "' el valor: " + resultado);
             return true;
         }
     }
@@ -254,7 +348,8 @@ public class Interprete {
      *
      * @param pExpresion Linea de codigo con la expresion a resolver
      * @param pNumeroLinea Numero de la linea de codigo actual
-     * @return
+     * @return retorna el valor resultante o null en caso que la ecuacion tenga
+     * division por cero
      */
     public String resolverEcuacion(String pExpresion, int pNumeroLinea) {
 
@@ -409,10 +504,7 @@ public class Interprete {
                         if (var1 == null) {
                             return null;
                         }
-//////////                        System.out.println(var1 +" "+ operador +" "+ var2 + " = " + var1);
-//////////                        System.out.print(tipoVar1 + operador + tipoVar2 + " = ");
                         tipoVar1 = getTipoResultante(tipoVar, operador, tipoVar1);
-//////////                        System.out.println(tipoVar1);
                         operador = "";
                     }
                     // Saca el parentesis de la pila '['
@@ -450,16 +542,11 @@ public class Interprete {
                     if (var1 == null) {
                         return null;
                     }
-////////                    System.out.println(var1 + operador + var2 + " = " + var1);
-////////                    System.out.print(tipoVar1 + operador + tipoVar2 + " = ");
                     tipoVar1 = getTipoResultante(tipoVar1, operador, tipoVar2);
-////////                    System.out.println(tipoVar1);
                     var2 = tipoVar2 = operador = "";
                 }
             }
         }
-
-        errores.insertar(var1);
         return var1;
     }
 

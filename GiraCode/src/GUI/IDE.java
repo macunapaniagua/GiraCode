@@ -7,12 +7,16 @@ package GUI;
 
 import Code.Interprete;
 import Code.SyntaxChecker;
+import Code.TxtHelper;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Style;
@@ -32,17 +36,25 @@ public class IDE extends javax.swing.JFrame {
      * Creates new form IDE
      */
     public IDE() {
+        // Carga el look and feel de windows
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        // Carga los componentes e inicializa variables                 
         initComponents();
+
         this.setLocationRelativeTo(null);
 
         // Establece el formato para las palabras reservadas (color azul)
         styleReservada = Txt_Editor.addStyle("Palabra reservada", null);
         StyleConstants.setForeground(styleReservada, Color.BLUE);
         //StyleConstants.setBold(styleReservada, true);
-        
+
         styleCodigoOK = Txt_Output.addStyle("Codigo OK", null);
         StyleConstants.setForeground(styleCodigoOK, Color.GREEN);
-        
+
         styleCodigoOK = Txt_Output.addStyle("Codigo Fail", null);
         StyleConstants.setForeground(styleCodigoOK, Color.RED);
     }
@@ -82,6 +94,11 @@ public class IDE extends javax.swing.JFrame {
         Panel_Superior.setOpaque(false);
 
         Lbl_Cargar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Cargar.png"))); // NOI18N
+        Lbl_Cargar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Lbl_CargarMouseClicked(evt);
+            }
+        });
 
         Lbl_Ejecutar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Play.png"))); // NOI18N
         Lbl_Ejecutar.setEnabled(false);
@@ -99,6 +116,11 @@ public class IDE extends javax.swing.JFrame {
         });
 
         Lbl_Guardar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Guardar.png"))); // NOI18N
+        Lbl_Guardar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Lbl_GuardarMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout Panel_SuperiorLayout = new javax.swing.GroupLayout(Panel_Superior);
         Panel_Superior.setLayout(Panel_SuperiorLayout);
@@ -180,7 +202,8 @@ public class IDE extends javax.swing.JFrame {
         getContentPane().add(Panel_Lateral, new org.netbeans.lib.awtextra.AbsoluteConstraints(960, 70, 140, 410));
 
         Txt_Editor.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        Txt_Editor.setFont(new java.awt.Font("Ebrima", 0, 14)); // NOI18N
+        Txt_Editor.setFont(new java.awt.Font("Gadugi", 1, 12)); // NOI18N
+        Txt_Editor.setForeground(new java.awt.Color(77, 77, 77));
         Txt_Editor.setOpaque(false);
         Txt_Editor.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -197,6 +220,8 @@ public class IDE extends javax.swing.JFrame {
         getContentPane().add(Scroll_Editor, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 70, 920, 400));
 
         Txt_Output.setEditable(false);
+        Txt_Output.setFont(new java.awt.Font("Gadugi", 1, 12)); // NOI18N
+        Txt_Output.setForeground(new java.awt.Color(77, 77, 77));
         Txt_Output.setOpaque(false);
         Scroll_Salida.setViewportView(Txt_Output);
 
@@ -217,7 +242,7 @@ public class IDE extends javax.swing.JFrame {
         int letraPresionada = evt.getKeyChar();
         if (letraPresionada == KeyEvent.VK_SPACE || letraPresionada == '[') {
             //JOptionPane.showMessageDialog(this, "Presiona espacio");
-        }else if(letraPresionada == '\\'){
+        } else if (letraPresionada == '\\') {
             evt.consume();
             JOptionPane.showMessageDialog(this, "Este programa no permite la insercion del caracter \'\\\'");
         }
@@ -314,19 +339,19 @@ public class IDE extends javax.swing.JFrame {
 
     private void Lbl_EjecutarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_EjecutarMouseClicked
         JOptionPane.showMessageDialog(this, "Acaba de hacer click en ejecutar");
-                
+
         Interprete corrida = new Interprete();
         Document salida = Txt_Output.getDocument();
 
         // Limpia el campo de salida para una nueva ejecucion.        
         try {
             salida.remove(0, salida.getLength());
-            
+
             corrida.ejecutarCodigo(Txt_Editor.getDocument().getText(0, Txt_Editor.getDocument().getLength()));
-            salida.insertString(0, corrida.getErrores().toString(), styleReservada);
-            
-            
-        } catch (BadLocationException ex) { }
+            salida.insertString(0, corrida.getErrores().getDatos(), styleReservada);
+
+        } catch (BadLocationException ex) {
+        }
     }//GEN-LAST:event_Lbl_EjecutarMouseClicked
 
     private void Lbl_CompilarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_CompilarMouseClicked
@@ -338,22 +363,110 @@ public class IDE extends javax.swing.JFrame {
 
             SyntaxChecker checker = new SyntaxChecker();
             checker.verificarCodigo(codigo);
-            
+
             // Borra el texto que haya en la salida
             Txt_Output.getDocument().remove(0, Txt_Output.getDocument().getLength());
-            
+
             // Pega la salida en la consola
-            if(checker.getSalidaRevision().equals("Compilación correcta\n")){
+            if (checker.getSalidaRevision().equals("Compilación correcta\n")) {
                 Lbl_Ejecutar.setEnabled(true);
                 Txt_Output.getDocument().insertString(0, checker.getSalidaRevision(), Txt_Editor.getStyle("Palabra reservada"));
-            }else{
+            } else {
                 Txt_Output.getDocument().insertString(0, checker.getSalidaRevision(), Txt_Output.getStyle("Codigo Fail"));
             }
-            
 
         } catch (BadLocationException ex) {
         }
     }//GEN-LAST:event_Lbl_CompilarMouseClicked
+
+    /**
+     * Evento utilizado para guardar el contenido de el editor en un archivo
+     * de texto
+     * @param evt 
+     */
+    private void Lbl_GuardarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_GuardarMouseClicked
+        // Crea una ventana que solicita al usuario donde guardar el archivo
+        JFileChooser ventanaGuardar = new JFileChooser();
+        ventanaGuardar.setDialogTitle("Guardar código GiraCODE");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(".txt", "txt", "text");
+        ventanaGuardar.setFileFilter(filter);
+        ventanaGuardar.setAcceptAllFileFilterUsed(false);
+        int seleccion = ventanaGuardar.showSaveDialog(this);
+
+        // Verifica la seleccion del nombre y la ruta para enviar a guardar el archivo
+        if (seleccion == JFileChooser.APPROVE_OPTION) {
+            // Obtiene la ruta seleccionada
+            String ruta = ventanaGuardar.getSelectedFile().getAbsolutePath();
+            // Verifica si hay que agregarle extension al archivo
+            if(!ruta.endsWith(".txt")){
+                ruta += ".txt";
+            }
+            // Crea un archivo con la ruta seleccionada
+            File archivoSeleccionado = new File(ruta);
+            // Verifica si el archivo existe
+            if (archivoSeleccionado.exists()) {
+                // Ha seleccionado un archivo existente. Pregunta si desea sobreescribirlo
+                int opt = JOptionPane.showConfirmDialog(this, "Esta seguro que desea sobreescribir el archivo "
+                        + ventanaGuardar.getSelectedFile().getName() + "?",
+                        "Sobreescribir archivo", JOptionPane.YES_NO_OPTION);
+                // Verifica si la opcion seleccionada es para sobreescribir el archivo o no
+                if (opt == JOptionPane.OK_OPTION) {
+                    // SOBREESCRIBE EL ARCHIVO 
+                    try {
+                        String codigo = Txt_Editor.getDocument().getText(0, Txt_Editor.getDocument().getLength());
+                        // Evia a sobreescribir el archivo.
+                        new TxtHelper().guardarTxt(archivoSeleccionado, codigo);
+                    } catch (BadLocationException ex) {
+                        Logger.getLogger(IDE.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            } else{
+                try {
+                    String codigo = Txt_Editor.getDocument().getText(0, Txt_Editor.getDocument().getLength());
+                    new TxtHelper().guardarTxt(archivoSeleccionado, codigo);
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(IDE.class.getName()).log(Level.SEVERE, null, ex);
+                }                 
+            }
+        }
+    }//GEN-LAST:event_Lbl_GuardarMouseClicked
+
+    /**
+     * Evento utilizado para cargar el contenido de un archivo de texto en el editor
+     * @param evt 
+     */
+    private void Lbl_CargarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_CargarMouseClicked
+        JFileChooser ventanaAbrir = new JFileChooser();
+        ventanaAbrir.setDialogTitle("Cargar código GiraCODE");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(".txt", "txt", "text");
+        ventanaAbrir.setFileFilter(filter);
+        ventanaAbrir.setAcceptAllFileFilterUsed(false);
+        int seleccion = ventanaAbrir.showOpenDialog(this);
+        
+        if(seleccion == JFileChooser.APPROVE_OPTION){            
+            // Obtiene la ruta seleccionada
+            String ruta = ventanaAbrir.getSelectedFile().getAbsolutePath();
+            // Verifica si hay que agregarle extension al archivo            
+            if(!ruta.endsWith(".txt")){
+                ruta += ".txt";
+            }
+            // Crea un archivo con la ruta seleccionada
+            File archivoSeleccionado = new File(ruta);
+            // Verifica si el archivo existe
+            if (archivoSeleccionado.exists()) {
+                try {
+                    // Eliminar el codigo que haya en el editor en ese momento
+                    Txt_Editor.getDocument().remove(0, Txt_Editor.getDocument().getLength());
+                    String codigoArchivo = new TxtHelper().cargarTXT(archivoSeleccionado);
+                    Txt_Editor.getDocument().insertString(0, codigoArchivo, null);                
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(IDE.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else{
+                JOptionPane.showMessageDialog(this, "El archivo buscado, no existe en el directorio");
+            }           
+        }
+    }//GEN-LAST:event_Lbl_CargarMouseClicked
 
     /**
      * @param args the command line arguments
