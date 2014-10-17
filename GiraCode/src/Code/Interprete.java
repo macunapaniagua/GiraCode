@@ -17,6 +17,10 @@ public class Interprete {
     ListaSimpleVariables variables;
     ListaCircular errores;
 
+    /**
+     * Metodo utilizado para retornar la lista que almacena el flujo de ejecucion
+     * @return lista con el flujo de ejecucion
+     */
     public ListaCircular getErrores() {
         return errores;
     }
@@ -142,7 +146,6 @@ public class Interprete {
                             break;
                         }
                         return false;
-
                     case "si":
                         ArrayList<String> bloqueIf = new ArrayList<>();
                         bloqueIf.add(codeLine);
@@ -165,34 +168,63 @@ public class Interprete {
                             return false;
                         }
 
-                    // Es una variable
-                    default:
-                        posNextWord = codeLine.indexOf("=") + ("=").length();
-                        nextWord = codeLine.substring(posNextWord, codeLine.length() - 1).trim();
-
-                        if (this.realizarAsignacion(nextWord, i + 1, primeraPalabra)) {
-                            break;
-                        } else {
-                            // Algo fallo (division por 0)
-                            return false;
-                        }
-
 ////////                                case "imprimirln":
 ////////                                    break;
 //////                    
-//////                    case "mientras":
-//////                        if (this.abrirMientras(lineaAnalizada, j, i + 1)) {
-//////                            break;
-//////                        } else {
-//////                            return;
-//////                        }
-//////                    case "#mientras":
-//////                        if (this.cerrarMientras(lineaAnalizada, j, i + 1)) {
-//////                            break;
-//////                        } else {
-//////                            return;
-//////                        }                  
-//////                    case "repita":
+                    case "mientras":
+                        // Obtiene el codigo de la condicion y la asignacion posterior
+                        String condicionMientras = codeLine.substring(codeLine.indexOf("[") + 1, codeLine.length() - 1).trim();
+                        int mientrasAbiertos = 1;
+                        String codigoMientras = "";
+                        // Obtiene todo el bloque  mientras
+                        while (mientrasAbiertos > 0) {
+                            // Obtiene la primera palabra de la linea de codigo 
+                            codeLine = codeLines[++i].trim();
+                            primeraPalabra = getFirstWord(codeLine);
+                            // Verifica si hay otro while dentro y aumenta o disminuye cantidades
+                            if (primeraPalabra.equals("mientras")) {
+                                mientrasAbiertos++;
+                                codigoMientras += codeLine + "\n";
+                            } else if (primeraPalabra.equals("#mientras") && (mientrasAbiertos - 1) == 0) {
+                                mientrasAbiertos--;
+                            } else {
+                                if (primeraPalabra.equals("#mientras")) {
+                                    mientrasAbiertos--;
+                                }
+                                codigoMientras += codeLine + "\n";
+                            }
+                        }
+                        if (cicloMientras(condicionMientras, codigoMientras)) {
+                            break;
+                        }
+                        return false;
+                    case "repita":
+                        int repitaAbiertos = 1;
+                        String codigoRepita = "";
+                        // Obtiene todo el bloque  repita cuando
+                        while (repitaAbiertos > 0) {
+                            // Obtiene la primera palabra de la linea de codigo 
+                            codeLine = codeLines[++i].trim();
+                            primeraPalabra = getFirstWord(codeLine);
+                            // Verifica si hay otro 'repita' dentro y aumenta o disminuye cantidades
+                            if (primeraPalabra.equals("repita")) {
+                                repitaAbiertos++;
+                                codigoRepita += codeLine + "\n";
+                            } else if (primeraPalabra.equals("#cuando") && (repitaAbiertos - 1) == 0) {
+                                repitaAbiertos--;
+                            } else {
+                                if (primeraPalabra.equals("#cuando")) {
+                                    repitaAbiertos--;
+                                }
+                                codigoRepita += codeLine + "\n";
+                            }
+                        }
+                        // Obtiene el codigo de la condicion
+                        String condicionRepita = codeLine.substring(codeLine.indexOf("[") + 1, codeLine.length() - 1).trim();
+                        if (cicloRepitaCuando(condicionRepita, codigoRepita)) {
+                            break;
+                        }
+                        return false;
 //////                        if (this.abrirRepita(lineaAnalizada, j, i + 1)) {
 //////                            break;
 //////                        } else {
@@ -204,12 +236,29 @@ public class Interprete {
 //////                        } else {
 //////                            return;
 //////                        }
+
+                    // Es una variable
+                    default:
+                        posNextWord = codeLine.indexOf("=") + ("=").length();
+                        nextWord = codeLine.substring(posNextWord, codeLine.length() - 1).trim();
+
+                        if (this.realizarAsignacion(nextWord, i + 1, primeraPalabra)) {
+                            break;
+                        } else {
+                            // Algo fallo (division por 0)
+                            return false;
+                        }
                 }
             }
         }
         return true;
     }
 
+    /**
+     * Metodo utilizado para realizar el condicional Si-Osi-Sino
+     * @param pBloqueIf Bloque de codigo si
+     * @return true si se ejecuto correctamente o false en caso contrario
+     */
     public boolean condicionIf(ArrayList<String> pBloqueIf) {
         int indiceBloque = 0;
         // Obtiene la linea de codigo del condicional if y seguidamente su condicion y aumenta una unidad el indiceBloque
@@ -275,6 +324,59 @@ public class Interprete {
     }
 
     /**
+     * Metodo utilizado para ejecutar el ciclo Repita-Cuando
+     *
+     * @param pCondicion condicion del ciclo
+     * @param pCodigo codigo que se va a ejecutar varias veces
+     * @return true si se ejecuto satisfactoriamente el ciclo o false en caso
+     * contrario
+     */
+    private boolean cicloRepitaCuando(String pCondicion, String pCodigo) {
+        String respuestaCondicion = "";
+        // Aqui se ejecuta el codigo repetitivo
+        do {
+            // Manda a ejecutar el codigo del ciclo
+            if (ejecutarCodigo(pCodigo) == false) {
+                return false;
+            }
+            // Revisa y asigna el valor de la condicion
+            respuestaCondicion = resolverEcuacion(pCondicion, 100);
+            if (respuestaCondicion == null) {
+                return false;
+            }
+        } while (respuestaCondicion.equals("verdad"));
+        return true;
+    }
+
+    /**
+     * Metodo utilizado para realizar el ciclo mientras
+     *
+     * @param pCondicion condicion de parada del ciclo mientras
+     * @param pCodigo codigo a ejecutarse dentro del ciclo mientras
+     * @return true si se logra ejecutar todo el ciclo o false en caso contrario
+     */
+    private boolean cicloMientras(String pCondicion, String pCodigo) {
+        // Se envia a evaluar la condicion
+        String respuestaCondicion = resolverEcuacion(pCondicion, 100);
+        if (respuestaCondicion == null) {
+            return false;
+        }
+        // Aqui se ejecuta el codigo repetitivo
+        while (respuestaCondicion.equals("verdad")) {
+            // Manda a ejecutar el codigo del ciclo
+            if (ejecutarCodigo(pCodigo) == false) {
+                return false;
+            }
+            // Vuelve a mandar la condicion para verificar el nuevo valor en caso que dependa de una variable
+            respuestaCondicion = resolverEcuacion(pCondicion, 100);
+            if (respuestaCondicion == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Metodo utilizado para ejecutar un ciclo for
      *
      * @param pCondicion condicion del ciclo y postAsignacion
@@ -288,8 +390,13 @@ public class Interprete {
         int posVariable = pCondicion.indexOf("$") + 1;
         String varAsignacion = pCondicion.substring(posVariable, pCondicion.indexOf("=", posVariable)).trim();
         String asignacion = pCondicion.substring(pCondicion.indexOf("=", posVariable) + 1).trim();
+        // Se evalua la condicion en busca de posibles errores (null)
+        String respuestaCondicion = resolverEcuacion(pCondicion, 100);
+        if (respuestaCondicion == null) {
+            return false;
+        }
         // Aqui se ejecuta el codigo repetitivo
-        while (resolverEcuacion(condicion, 100).equals("verdad")) {
+        while (respuestaCondicion.equals("verdad")) {
             // Manda a ejecutar el codigo del ciclo
             if (ejecutarCodigo(pCodigo) == false) {
                 return false;
@@ -297,9 +404,14 @@ public class Interprete {
             // Realiza la asignacion y verifica que se haya realizado exitosamente
             if (realizarAsignacion(asignacion, 100, varAsignacion) == false) {
                 return false;
+            }            
+            // Se vuelve a verificar la condicion en caso de que cambie con respecto a una var
+            respuestaCondicion = resolverEcuacion(pCondicion, 100);
+            if (respuestaCondicion == null) {
+                return false;
             }
         }
-        return resolverEcuacion(condicion, 100).equals("falso");
+        return true;
     }
 
     /**
