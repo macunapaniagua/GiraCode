@@ -8,6 +8,7 @@ package GUI;
 import Code.Interprete;
 import Code.SyntaxChecker;
 import Code.TxtHelper;
+import Code.main;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -22,6 +23,7 @@ import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 /**
  *
@@ -30,9 +32,7 @@ import javax.swing.text.StyleConstants;
 public class IDE extends javax.swing.JFrame {
 
     int numeroDeLineas = 1;
-    // Formato para las palabras reservadas
-    Style styleReservada;
-    Style styleCodigoOK;
+    //String currentWord = "";
 
     /**
      * Creates new form IDE
@@ -49,34 +49,39 @@ public class IDE extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         // Hace que los scrollbars se sincronizen
         Scroll_Numeros.getVerticalScrollBar().setModel(Scroll_Editor.getVerticalScrollBar().getModel());
-        
+        // Se inicializan los colores para las palabras reservadas y la salida
+        crearStyles();
+    }
 
-
-// Hace el ScrollBar de los numeros transparene
-        //Scroll_Numeros.getViewport().setOpaque(false);
-
-        
-        
-        // 
-//        styleReservada = Txt_NumeroLineas.addStyle("Orientacion", null);
-//        StyleConstants.setAlignment(styleReservada, StyleConstants.ALIGN_RIGHT);
-
+    /**
+     * Metodo utilizado para cargar los formatos del editor, los numeros del
+     * linea y la salida en consola
+     */
+    private void crearStyles() {
         // Acomoda el texto del numero de lineas a la derecha del TextPane
         SimpleAttributeSet attribs = new SimpleAttributeSet();
         StyleConstants.setAlignment(attribs, StyleConstants.ALIGN_RIGHT);
         Txt_NumeroLineas.setParagraphAttributes(attribs, false);
         Txt_NumeroLineas.setText("1");
 
-        // Establece el formato para las palabras reservadas (color azul)
-        styleReservada = Txt_Editor.addStyle("Palabra reservada", null);
-        StyleConstants.setForeground(styleReservada, Color.BLUE);
-        //StyleConstants.setBold(styleReservada, true);
+        // Formato para las palabras reservadas
+        Style style;
+        Color reservada = new Color(9, 146, 239);
+        Color exito = new Color(37, 173, 40);
+        Color fail = new Color(243, 5, 5);
 
-        styleCodigoOK = Txt_Output.addStyle("Codigo OK", null);
-        StyleConstants.setForeground(styleCodigoOK, Color.GREEN);
+        // Establece el formato para las palabras reservadas (color celeste y negrita)
+        style = Txt_Editor.addStyle("reservada", null);
+        StyleConstants.setBold(style, true);
+        StyleConstants.setForeground(style, reservada);
 
-        styleCodigoOK = Txt_Output.addStyle("Codigo Fail", null);
-        StyleConstants.setForeground(styleCodigoOK, Color.RED);
+        // Formato para la salida exitosa del programa
+        style = Txt_Output.addStyle("ok", null);
+        StyleConstants.setForeground(style, exito);
+
+        // Formato para la salida fallida del programa
+        style = Txt_Output.addStyle("fail", null);
+        StyleConstants.setForeground(style, fail);
     }
 
     /**
@@ -106,6 +111,7 @@ public class IDE extends javax.swing.JFrame {
         Lbl_Logo = new javax.swing.JLabel();
         Scroll_Numeros = new javax.swing.JScrollPane();
         Txt_NumeroLineas = new javax.swing.JTextPane();
+        jLabel1 = new javax.swing.JLabel();
         Lbl_Wallpaper = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -116,6 +122,7 @@ public class IDE extends javax.swing.JFrame {
         Panel_Superior.setOpaque(false);
 
         Lbl_Cargar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Cargar.png"))); // NOI18N
+        Lbl_Cargar.setFocusable(false);
         Lbl_Cargar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 Lbl_CargarMouseClicked(evt);
@@ -124,6 +131,7 @@ public class IDE extends javax.swing.JFrame {
 
         Lbl_Ejecutar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Play.png"))); // NOI18N
         Lbl_Ejecutar.setEnabled(false);
+        Lbl_Ejecutar.setFocusable(false);
         Lbl_Ejecutar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 Lbl_EjecutarMouseClicked(evt);
@@ -131,6 +139,7 @@ public class IDE extends javax.swing.JFrame {
         });
 
         Lbl_Compilar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Build.png"))); // NOI18N
+        Lbl_Compilar.setFocusable(false);
         Lbl_Compilar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 Lbl_CompilarMouseClicked(evt);
@@ -138,6 +147,7 @@ public class IDE extends javax.swing.JFrame {
         });
 
         Lbl_Guardar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Guardar.png"))); // NOI18N
+        Lbl_Guardar.setFocusable(false);
         Lbl_Guardar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 Lbl_GuardarMouseClicked(evt);
@@ -199,6 +209,11 @@ public class IDE extends javax.swing.JFrame {
         Btn_for.setText("Ciclo Para");
         Btn_for.setFocusable(false);
         Btn_for.setRequestFocusEnabled(false);
+        Btn_for.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Btn_forActionPerformed(evt);
+            }
+        });
         Panel_Lateral.add(Btn_for, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 161, 130, 72));
 
         Btn_doWhile.setText("Ciclo Repita");
@@ -226,15 +241,11 @@ public class IDE extends javax.swing.JFrame {
         Txt_Editor.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         Txt_Editor.setFont(new java.awt.Font("Gadugi", 1, 12)); // NOI18N
         Txt_Editor.setForeground(new java.awt.Color(77, 77, 77));
+        Txt_Editor.setText(" ");
         Txt_Editor.setOpaque(false);
-        Txt_Editor.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                Txt_EditorMouseClicked(evt);
-            }
-        });
         Txt_Editor.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                Txt_EditorKeyPressed(evt);
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                Txt_EditorKeyReleased(evt);
             }
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 Txt_EditorKeyTyped(evt);
@@ -247,13 +258,14 @@ public class IDE extends javax.swing.JFrame {
         Txt_Output.setEditable(false);
         Txt_Output.setFont(new java.awt.Font("Gadugi", 1, 12)); // NOI18N
         Txt_Output.setForeground(new java.awt.Color(77, 77, 77));
+        Txt_Output.setFocusable(false);
         Txt_Output.setOpaque(false);
         Scroll_Salida.setViewportView(Txt_Output);
 
         getContentPane().add(Scroll_Salida, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 490, 920, 150));
 
         Lbl_Logo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Code.png"))); // NOI18N
-        getContentPane().add(Lbl_Logo, new org.netbeans.lib.awtextra.AbsoluteConstraints(960, 500, 120, -1));
+        getContentPane().add(Lbl_Logo, new org.netbeans.lib.awtextra.AbsoluteConstraints(960, 495, 120, -1));
 
         Scroll_Numeros.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         Scroll_Numeros.setOpaque(false);
@@ -261,10 +273,16 @@ public class IDE extends javax.swing.JFrame {
         Txt_NumeroLineas.setEditable(false);
         Txt_NumeroLineas.setFont(new java.awt.Font("Gadugi", 1, 12)); // NOI18N
         Txt_NumeroLineas.setForeground(new java.awt.Color(77, 77, 77));
+        Txt_NumeroLineas.setFocusable(false);
         Txt_NumeroLineas.setOpaque(false);
         Scroll_Numeros.setViewportView(Txt_NumeroLineas);
 
         getContentPane().add(Scroll_Numeros, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 70, 27, 400));
+
+        jLabel1.setFont(new java.awt.Font("Viner Hand ITC", 1, 18)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(77, 77, 77));
+        jLabel1.setText("GiraCODE");
+        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(980, 620, -1, -1));
 
         Lbl_Wallpaper.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Fondo.png"))); // NOI18N
         Lbl_Wallpaper.setToolTipText("");
@@ -273,37 +291,49 @@ public class IDE extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Metodo que evita que se escriba el backSlash y deshabilita el boton de
+     * ejecutar en caso que se modifique el codigo
+     *
+     * @param evt
+     */
     private void Txt_EditorKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Txt_EditorKeyTyped
         // Deshabilita el boton de ejecutar si se presiona una tecla
-        if(Lbl_Ejecutar.isEnabled()){
+        if (Lbl_Ejecutar.isEnabled()) {
             Lbl_Ejecutar.setEnabled(false);
         }
-        
-        int letraPresionada = evt.getKeyChar();
-        if (letraPresionada == KeyEvent.VK_SPACE || letraPresionada == '[') {
-            //JOptionPane.showMessageDialog(this, "Presiona espacio");
-        } else if (letraPresionada == '\\') {
+        // Obtiene la letra
+        char key = evt.getKeyChar();
+        // No se permite insertar un '\'
+        if (key == '\\') {
             evt.consume();
-            JOptionPane.showMessageDialog(this, "Este programa no permite la insercion del caracter \'\\\'");
+            JOptionPane.showMessageDialog(this, "Este programa no permite la inserción del caracter \'\\\'");
         }
     }//GEN-LAST:event_Txt_EditorKeyTyped
 
+    /**
+     * Evento utilizado para cargar el bloque de codigo repita/cuando en el
+     * editor de texto
+     *
+     * @param evt
+     */
     private void Btn_doWhileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_doWhileActionPerformed
         int posicionCursor = Txt_Editor.getCaretPosition();
-        String codigoRepita = "repita\n\n#cuando<  >";
+        String codigoRepita = "repita\n\n#cuando [  ]\n";
 
         try {
             // Inserta el bloque repita-cuando
             Txt_Editor.getDocument().insertString(posicionCursor, codigoRepita, null);
             // Pinta de color azul las plabras reservadas
-            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 6, styleReservada, false);
-            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 8, 8, styleReservada, false);
-            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 18, 1, styleReservada, false);
+            Style style = Txt_Editor.getStyle("reservada");
+            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 6, style, false);
+            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 8, 7, style, false);
         } catch (BadLocationException ex) {
         }
-
+        // Ingresa los numeros de lineas, para los enter de este bloque
+        this.insertarNumeroLineas(3);
         // Coloca el cursor en la condicion de parada
-        Txt_Editor.setCaretPosition(posicionCursor + 17);
+        Txt_Editor.setCaretPosition(posicionCursor + 18);
     }//GEN-LAST:event_Btn_doWhileActionPerformed
 
     /**
@@ -313,83 +343,95 @@ public class IDE extends javax.swing.JFrame {
      */
     private void Btn_whileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_whileActionPerformed
         int posicionCursor = Txt_Editor.getCaretPosition();
-        String codigoMientras = "mientras<  >\n\n#mientras";
-
+        String codigoMientras = "mientras [  ]\n\n#mientras\n";
         try {
             // Inserta el bloque mientras
             Txt_Editor.getDocument().insertString(posicionCursor, codigoMientras, null);
             // Pinta de color azul las plabras reservadas
-            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 9, styleReservada, false);
-            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 11, 1, styleReservada, false);
-            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 14, 9, styleReservada, false);
+            Style style = Txt_Editor.getStyle("reservada");
+            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 8, style, false);
+            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 15, 9, style, false);
         } catch (BadLocationException ex) {
         }
-
+        // insertar numero de saltos de linea
+        insertarNumeroLineas(3);
         // Coloca el cursor en la condicion de parada
-        Txt_Editor.setCaretPosition(posicionCursor + 10);
+        Txt_Editor.setCaretPosition(posicionCursor + 11);
     }//GEN-LAST:event_Btn_whileActionPerformed
 
-    private void Txt_EditorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Txt_EditorMouseClicked
-
-        // Verifica si el click presionado fue el izquierdo = 1
-        if (evt.getButton() == 1) {
-            //JOptionPane.showMessageDialog(this, "Este es el que necesito");
-        }
-    }//GEN-LAST:event_Txt_EditorMouseClicked
-
     /**
-     * Evento utilizado para insertar la sentencia de imprimir en consola
+     * Evento utilizado para insertar la sentencia de imprimir en el editor de
+     * texto
      *
      * @param evt
      */
     private void Btn_printActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_printActionPerformed
         int posicionCursor = Txt_Editor.getCaretPosition();
-        String codigoImprimir = "imprimir ";
-
+        String codigoImprimir = "imprimir  !";
         try {
             // Inserta el bloque mientras
             Txt_Editor.getDocument().insertString(posicionCursor, codigoImprimir, null);
             // Pinta de color azul las plabras reservadas
-            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 8, styleReservada, false);
+            Style style = Txt_Editor.getStyle("reservada");
+            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 8, style, false);
         } catch (BadLocationException ex) {
         }
-
         // Coloca el cursor en la condicion de parada
         Txt_Editor.setCaretPosition(posicionCursor + 9);
     }//GEN-LAST:event_Btn_printActionPerformed
 
+    /**
+     * Evento utilizado para cargar una condicional 'si' en el editor de texto
+     *
+     * @param evt
+     */
     private void Btn_ifActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_ifActionPerformed
         int posicionCursor = Txt_Editor.getCaretPosition();
-        String codigoSi = "si[  ]\n\n#si\n";
-
+        String codigoSi = "si [  ]\n\n#si\n";
         try {
             // Inserta la sentencia si
             Txt_Editor.getDocument().insertString(posicionCursor, codigoSi, null);
             // Pinta de color azul las plabras reservadas
-            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 3, styleReservada, false);
-            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 5, 1, styleReservada, false);
-            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 8, 3, styleReservada, false);
+            Style style = Txt_Editor.getStyle("reservada");
+            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 2, style, false);
+            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 9, 3, style, false);
         } catch (BadLocationException ex) {
         }
-
+        // Inserta la cantidad de saltos de linea que utiliza este codigo
+        insertarNumeroLineas(3);
         // Coloca el cursor en la condicion de parada
-        Txt_Editor.setCaretPosition(posicionCursor + 4);
+        Txt_Editor.setCaretPosition(posicionCursor + 5);
     }//GEN-LAST:event_Btn_ifActionPerformed
 
     /**
-     * Evento utilizado para ejecutar el codigo del editor cuando se presione 
-     * el boton de ejecutar
-     * @param evt 
+     * Metodo utilizado para agregar cierta cantidad de lineas al inicador de
+     * numero de linea
+     *
+     * @param pNumeroLineas numero de lineas a agregar
+     */
+    private void insertarNumeroLineas(int pNumeroLineas) {
+        for (int i = 0; i < pNumeroLineas; i++) {
+            numeroDeLineas++;
+            Txt_NumeroLineas.setText(Txt_NumeroLineas.getText() + '\n' + numeroDeLineas);
+        }
+    }
+
+    /**
+     * Evento utilizado para ejecutar el codigo del editor cuando se presione el
+     * boton de ejecutar
+     *
+     * @param evt
      */
     private void Lbl_EjecutarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_EjecutarMouseClicked
         Interprete corrida = new Interprete();
-        Document salida = Txt_Output.getDocument();                
+        Document salida = Txt_Output.getDocument();
         try {
             // Limpia el campo de salida para una nueva ejecucion.
             salida.remove(0, salida.getLength());
             // Ejecuta y escribe la salida del programa
             corrida.ejecutarCodigo(Txt_Editor.getDocument().getText(0, Txt_Editor.getDocument().getLength()));
-            salida.insertString(0, corrida.getErrores().getDatos(), styleReservada);
+            salida.insertString(0, corrida.getErrores().getDatos(), null);
+            salida.insertString(salida.getLength(), "Corrida exitosa", Txt_Output.getStyle("ok"));
         } catch (BadLocationException ex) {
         }
     }//GEN-LAST:event_Lbl_EjecutarMouseClicked
@@ -397,7 +439,8 @@ public class IDE extends javax.swing.JFrame {
     /**
      * Evento utilizado para enviar a compilar el codigo y escribir el resultado
      * en el espacio de salida
-     * @param evt 
+     *
+     * @param evt
      */
     private void Lbl_CompilarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_CompilarMouseClicked
         Document documento = Txt_Editor.getDocument();
@@ -412,9 +455,9 @@ public class IDE extends javax.swing.JFrame {
             // Pega la salida en la consola con el respectivo color de acuerdo al resultado obtenido
             if (checker.getSalidaRevision().equals("Compilación correcta\n")) {
                 Lbl_Ejecutar.setEnabled(true);
-                Txt_Output.getDocument().insertString(0, checker.getSalidaRevision(), Txt_Editor.getStyle("Palabra reservada"));
+                Txt_Output.getDocument().insertString(0, checker.getSalidaRevision(), Txt_Output.getStyle("ok"));
             } else {
-                Txt_Output.getDocument().insertString(0, checker.getSalidaRevision(), Txt_Output.getStyle("Codigo Fail"));
+                Txt_Output.getDocument().insertString(0, checker.getSalidaRevision(), Txt_Output.getStyle("fail"));
             }
         } catch (BadLocationException ex) {
         }
@@ -474,25 +517,61 @@ public class IDE extends javax.swing.JFrame {
     }//GEN-LAST:event_Lbl_GuardarMouseClicked
 
     /**
-     * Metodo utilizado para cargar los numeros de linea despues de corgar un archivo
+     * Metodo utilizado para cargar los numeros de linea despues de corgar un
+     * archivo
      */
     private void cargarNumeroDeLineas() {
         int cantidadDeLineas = 1;
         Txt_NumeroLineas.setText(cantidadDeLineas + "");
         String textoCargado = Txt_Editor.getText();
         // Recorre el texto del editor en busca de saltos de linea para agregar un numero mas
-        for (int i = 0; i < textoCargado.length(); i++) {            
-            i = textoCargado.indexOf("\n", i);            
-            if(i == -1){
+        for (int i = 0; i < textoCargado.length(); i++) {
+            i = textoCargado.indexOf("\n", i);
+            if (i == -1) {
                 i = textoCargado.length();
-            }else{
+            } else {
                 cantidadDeLineas++;
                 Txt_NumeroLineas.setText(Txt_NumeroLineas.getText() + "\n" + cantidadDeLineas);
-            }                    
+            }
         }
         numeroDeLineas = cantidadDeLineas;
     }
-    
+
+    /**
+     * Metodo utilizado para cargar el formato de las palabras reservadas
+     * despues de abrir un archivo txt
+     */
+    private void cargarFormato() {
+        try {
+            char letra;
+            String palabra = "";
+            String codigo = Txt_Editor.getDocument().getText(0, Txt_Editor.getDocument().getLength());
+            // Se recorre en busca de cada una de las palabras que componen el codigo
+            for (int i = 0; i < codigo.length(); i++) {
+                letra = codigo.charAt(i);
+                if (letra == ' ' || letra == '\n' || letra == '\t' || letra == '[' || letra == ':') {
+                    if (!palabra.equals("")) {
+                        if (main.palabrasReservadas.esPalabraReservada(palabra)) {
+                            // Aqui se carga el formato
+                            int posfirst = i - palabra.length();
+                            Style style = Txt_Editor.getStyle("reservada");
+                            Txt_Editor.getStyledDocument().setCharacterAttributes(posfirst, palabra.length(), style, false);
+                        } else {
+                            int posfirst = i - palabra.length();
+                            Style style = Txt_Editor.getStyle(StyleContext.DEFAULT_STYLE);
+                            Txt_Editor.getStyledDocument().setCharacterAttributes(posfirst, palabra.length(), style, false);
+                        }
+                    }
+                    palabra = "";
+                } else {
+                    palabra += letra;
+                }
+            }
+        } catch (BadLocationException ex) {
+            Logger.getLogger(IDE.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     /**
      * Evento utilizado para cargar el contenido de un archivo de texto en el
      * editor
@@ -523,6 +602,7 @@ public class IDE extends javax.swing.JFrame {
                     Txt_Editor.getDocument().remove(0, Txt_Editor.getDocument().getLength());
                     String codigoArchivo = new TxtHelper().cargarTXT(archivoSeleccionado);
                     Txt_Editor.getDocument().insertString(0, codigoArchivo, null);
+                    cargarFormato();
                     cargarNumeroDeLineas();
                 } catch (BadLocationException ex) {
                     Logger.getLogger(IDE.class.getName()).log(Level.SEVERE, null, ex);
@@ -534,38 +614,45 @@ public class IDE extends javax.swing.JFrame {
     }//GEN-LAST:event_Lbl_CargarMouseClicked
 
     /**
-     * Evento utilizado para agregar o eliminar el numero de linea cuando se presiona
-     * la tecla entero o backSpace respectivamente
-     * @param evt 
+     * Evento utilizado para cargar el bloque 'para' en el editor de texto
+     *
+     * @param evt
      */
-    private void Txt_EditorKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Txt_EditorKeyPressed
-        // Obtiene el codigo de la letra presionada
-        int letraPresionada = evt.getKeyCode();
-        // Verifica si la tecla presionada fue el enter para agregar un numero o backspace para borrarlo
-        if (letraPresionada == KeyEvent.VK_ENTER) {
+    private void Btn_forActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Btn_forActionPerformed
+        int posicionCursor = Txt_Editor.getCaretPosition();
+        String codigoMientras = "para [  $  ]\n\n#para\n";
+        try {
+            // Inserta el bloque mientras
+            Txt_Editor.getDocument().insertString(posicionCursor, codigoMientras, null);
+            // Pinta de color azul las plabras reservadas
+            Style style = Txt_Editor.getStyle("reservada");
+            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor, 4, style, false);
+            Txt_Editor.getStyledDocument().setCharacterAttributes(posicionCursor + 14, 5, style, false);
+        } catch (BadLocationException ex) {
+        }
+        // insertar numero de saltos de linea
+        insertarNumeroLineas(3);
+        // Coloca el cursor en la condicion de parada
+        Txt_Editor.setCaretPosition(posicionCursor + 7);
+    }//GEN-LAST:event_Btn_forActionPerformed
+
+    private void Txt_EditorKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_Txt_EditorKeyReleased
+        // Obtiene la letra presionada
+        char key = evt.getKeyChar();
+        // Carga los numeros de linea en caso de que se haya borrado alguna
+        if (key == KeyEvent.VK_BACK_SPACE || key == KeyEvent.VK_DELETE) {
+            cargarNumeroDeLineas();
+        } else if (key == KeyEvent.VK_ENTER) {
+            // Agrega una nueva linea y un numero de linea mas
             numeroDeLineas++;
             Txt_NumeroLineas.setText(Txt_NumeroLineas.getText() + "\n" + numeroDeLineas);
-        }         
-        else if (letraPresionada == KeyEvent.VK_BACK_SPACE || letraPresionada == KeyEvent.VK_DELETE) {
-            try {
-                String codigo = Txt_Editor.getDocument().getText(0, Txt_Editor.getDocument().getLength());
-                //String codigo = Txt_Editor.getText();
-                int posCursor = Txt_Editor.getCaretPosition();
-                if(letraPresionada == KeyEvent.VK_DELETE){
-                    posCursor++;
-                }
-                // Verifica que haya algo y que el ultimo caracter sea un salto de linea para borrar
-                if (codigo.length() > 0 && posCursor <= codigo.length() && codigo.charAt(posCursor - 1) == '\n') {
-                    numeroDeLineas--;
-                    String numeros = Txt_NumeroLineas.getText();
-                    numeros = numeros.substring(0, numeros.lastIndexOf('\n'));
-                    Txt_NumeroLineas.setText(numeros);
-                }
-            } catch (BadLocationException ex) {
-                Logger.getLogger(IDE.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        }else if(evt.isControlDown() && (evt.getKeyCode() == KeyEvent.VK_X || evt.getKeyCode() == KeyEvent.VK_V)){
+            // Se ha cambiado la cantidad de lineas xq se ha presionado ctrl+x o ctrl+v
+            cargarNumeroDeLineas();
         }
-    }//GEN-LAST:event_Txt_EditorKeyPressed
+        // Pinta las palabras reservadas nuevamente
+        cargarFormato();
+    }//GEN-LAST:event_Txt_EditorKeyReleased
 
     /**
      * @param args the command line arguments
@@ -622,5 +709,6 @@ public class IDE extends javax.swing.JFrame {
     private javax.swing.JTextPane Txt_Editor;
     private javax.swing.JTextPane Txt_NumeroLineas;
     private javax.swing.JTextPane Txt_Output;
+    private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 }

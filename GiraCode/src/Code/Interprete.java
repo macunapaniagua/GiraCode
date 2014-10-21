@@ -225,18 +225,6 @@ public class Interprete {
                             break;
                         }
                         return false;
-//////                        if (this.abrirRepita(lineaAnalizada, j, i + 1)) {
-//////                            break;
-//////                        } else {
-//////                            return;
-//////                        }
-//////                    case "#cuando":
-//////                        if (this.cerrarRepitaCuando(lineaAnalizada, j, i + 1)) {
-//////                            break;
-//////                        } else {
-//////                            return;
-//////                        }
-
                     // Es una variable
                     default:
                         posNextWord = codeLine.indexOf("=") + ("=").length();
@@ -391,7 +379,7 @@ public class Interprete {
         String varAsignacion = pCondicion.substring(posVariable, pCondicion.indexOf("=", posVariable)).trim();
         String asignacion = pCondicion.substring(pCondicion.indexOf("=", posVariable) + 1).trim();
         // Se evalua la condicion en busca de posibles errores (null)
-        String respuestaCondicion = resolverEcuacion(pCondicion, 100);
+        String respuestaCondicion = resolverEcuacion(condicion, 100);
         if (respuestaCondicion == null) {
             return false;
         }
@@ -406,7 +394,7 @@ public class Interprete {
                 return false;
             }            
             // Se vuelve a verificar la condicion en caso de que cambie con respecto a una var
-            respuestaCondicion = resolverEcuacion(pCondicion, 100);
+            respuestaCondicion = resolverEcuacion(condicion, 100);
             if (respuestaCondicion == null) {
                 return false;
             }
@@ -426,7 +414,7 @@ public class Interprete {
         if (resultado == null) {
             return false;
         } else {
-            errores.insertar("Se imprimio: " + resultado);
+            errores.insertar("Se imprimió: " + resultado);
             return true;
         }
     }

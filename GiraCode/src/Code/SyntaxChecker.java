@@ -30,6 +30,7 @@ public class SyntaxChecker {
 
     /**
      * Metodo utilizado para verificar la sintaxis del codigo
+     * @param pCodigo codigo que se desea verificar
      */
     public void verificarCodigo(String pCodigo) {
         // Separo todo el documento por lineas de codigo (separado por '\n')
@@ -57,7 +58,6 @@ public class SyntaxChecker {
 
                         if (main.palabrasReservadas.esPalabraReservada(palabraAnalizada)) {
                             // La palabra analizada es una palabra reservada
-                            System.out.println(palabraAnalizada + " es palabra reservada");
                             switch (palabraAnalizada) {
                                 case "programa":
                                     // Intento agregar la etiqueta de apertura del programa
@@ -191,7 +191,6 @@ public class SyntaxChecker {
                             }
                         } // Verifica si es una variable
                         else if (variables.existeVariable(palabraAnalizada)) {
-                            System.out.println("Es variable");
                             // Verifica si la variable que se va a usar es el nombre de la clase
                             if (variables.getVariable(palabraAnalizada).getTipo().equals("clase")) {
                                 salidaRevision += "ERROR DE SINTAXIS en la linea " + (i + 1)
@@ -577,7 +576,7 @@ public class SyntaxChecker {
         return -1;
     }
 
-    // LISTO
+    // Metodo utilizado para obtener la posicion del ultimo ']' en una linea o -1 si no es el ultimo
     public int getCierreCorchete(String pCodigo, int pPosicionInicio) {
         int ultimoChar = pCodigo.length() - 1;
         // Busca que exista el cierre de corchete
@@ -593,7 +592,7 @@ public class SyntaxChecker {
         return -1;
     }
 
-    // LISTO
+    // Metodo utilizado para verificar el tipo de dato resultante en operacion entre dos tipos de datos
     public String verificarOperacion(String pVar1, String pOperador, String pVar2) {
         // Se va a retornar el tipo del valor si es correcta o null si es incorrecto
         switch (pOperador) {
@@ -706,7 +705,7 @@ public class SyntaxChecker {
         return null;
     }
 
-    // LISTO
+    // Metodo utilizado para verificar que el operador 'no' sea utilizado con tipos de datos 'binario'
     public String verificarNo(String pValor) {
         if (pValor.equals("binario")) {
             return "binario";
@@ -715,8 +714,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public String resolverEcuacion(String pCodigo, int pNumeroLinea) {
+    // Metodo utilizado para verificar que una operacion sea realizada entre tipos de datos validos
+    private String resolverEcuacion(String pCodigo, int pNumeroLinea) {
         boolean negativo = false;
         String Var1 = "";
         String Var2 = "";
@@ -1121,8 +1120,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean verificarImprimir(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar la sentencia 'imprimir'
+    private boolean verificarImprimir(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         // Verifica que despues de 'imprimir' existe un espacio
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
             // Verifica que se haya creado un programa
@@ -1154,8 +1153,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean realizarAsignacion(String pLineaCodigo, int pPosicion, int pNumeroLinea, String pTipoDato) {
+    // Metodo utilizado para realizar la asignacion de un valor a una variable
+    private boolean realizarAsignacion(String pLineaCodigo, int pPosicion, int pNumeroLinea, String pTipoDato) {
 
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '=' || pLineaCodigo.charAt(pPosicion) == '\t') {
 
@@ -1214,8 +1213,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean abrirMientras(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar el 'mientras[condicion]'
+    private boolean abrirMientras(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         // Verifica que se hay ingresado si despues de la palabra si habia un espacio o '[' o un tab
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '[' || pLineaCodigo.charAt(pPosicion) == '\t') {
 
@@ -1267,8 +1266,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean cerrarMientras(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar el '#mientras'
+    private boolean cerrarMientras(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
             // Verifica que se haya creado un programa
             if (!pilaPalabrasReservadas.estaVacia()) {
@@ -1308,9 +1307,8 @@ public class SyntaxChecker {
         }
     }
 
-    // Retorna la posicion donde esta el caracter '[' o -1 si no es el primero
-    // LISTO
-    public int getAperturaCorchete(String pLineaCodigo, int pPosicionInicial) {
+    // Metodo utilizado para obtener la posicion del caracter '[' o -1 si no es el primero en una linea 
+    private int getAperturaCorchete(String pLineaCodigo, int pPosicionInicial) {
         while (pPosicionInicial < pLineaCodigo.length()) {
             // Verifica que no sea un espacio
             if (pLineaCodigo.charAt(pPosicionInicial) != ' ' && pLineaCodigo.charAt(pPosicionInicial) != '\t') {
@@ -1325,8 +1323,8 @@ public class SyntaxChecker {
         return -1;
     }
 
-    // LISTO
-    public boolean abrirSi(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar el 'si[condicion]'
+    private boolean abrirSi(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         // Verifica que se hay ingresado si despues de la palabra si habia un espacio o '['
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '[' || pLineaCodigo.charAt(pPosicion) == '\t') {
 
@@ -1378,8 +1376,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean cerrarSi(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar el '#si'
+    private boolean cerrarSi(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
             // Verifica que se haya creado un programa
             if (!pilaPalabrasReservadas.estaVacia()) {
@@ -1419,8 +1417,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean comprobraSino(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar el 'sino'
+    private boolean comprobraSino(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
             // Verifica que se haya creado un programa
             if (!pilaPalabrasReservadas.estaVacia()) {
@@ -1460,8 +1458,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean comprobarOsi(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar el 'osi[condicion]'
+    private boolean comprobarOsi(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         // Verifica que se hay ingresado si despues de la palabra si habia un espacio o '['
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '[' || pLineaCodigo.charAt(pPosicion) == '\t') {
             // Verifica que ya se haya abierto programa
@@ -1522,8 +1520,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean abrirRepita(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar el 'repita'
+    private boolean abrirRepita(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
             // Verifica que se haya creado un programa
             if (!pilaPalabrasReservadas.estaVacia()) {
@@ -1554,8 +1552,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean cerrarRepitaCuando(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar el 'cuando[condicion]'
+    private boolean cerrarRepitaCuando(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         // Verifica que se hay ingresado si despues de la palabra #cuando habia un espacio o '[' o tab
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '[' || pLineaCodigo.charAt(pPosicion) == '\t') {
             // Verifica que ya se haya abierto programa
@@ -1618,8 +1616,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean abrirPara(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar el 'para[condicion $ sentencia]
+    private boolean abrirPara(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         // Verifica que se hay ingresado si despues de la palabra si habia un espacio o '[' o un tab
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '[' || pLineaCodigo.charAt(pPosicion) == '\t') {
             if (!pilaPalabrasReservadas.estaVacia()) {
@@ -1738,8 +1736,8 @@ public class SyntaxChecker {
         }
     }
 
-    // LISTO
-    public boolean cerrarPara(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
+    // Metodo utilizado para verificar el #para
+    private boolean cerrarPara(String pLineaCodigo, int pPosicion, int pNumeroLinea) {
         if (pLineaCodigo.charAt(pPosicion) == ' ' || pLineaCodigo.charAt(pPosicion) == '\t') {
             // Verifica que se haya creado un programa
             if (!pilaPalabrasReservadas.estaVacia()) {
