@@ -124,7 +124,7 @@ public class Interprete {
                     case "para":
                         // Obtiene el codigo de la condicion y la asignacion posterior
                         String condicion = codeLine.substring(codeLine.indexOf("[") + 1, codeLine.length() - 1).trim();
-
+                        int numLineasPara = 0;
                         int paraAbiertos = 1;
                         String codigoPara = "";
 
@@ -145,12 +145,16 @@ public class Interprete {
                                 }
                                 codigoPara += codeLine + "\n";
                             }
+                            numLineasPara++;
                         }
                         if (cicloPara(condicion, codigoPara)) {
+                            numeroDeLinea += numLineasPara;
                             break;
                         }
                         return false;
                     case "si":
+                        int numLineaAbreSi = numeroDeLinea;
+                        int numLineaBloqueSi;
                         ArrayList<String> bloqueIf = new ArrayList<>();
                         bloqueIf.add(codeLine);
                         int ifAbiertos = 1;
@@ -162,11 +166,16 @@ public class Interprete {
                                 ifAbiertos++;
                             } else if (primeraPalabra.equals("#si")) {
                                 ifAbiertos--;
+                            } else if(codeLine.equals("")){
+                                codeLine = " ";
                             }
                             bloqueIf.add(codeLine);
                         } while (ifAbiertos >= 1);
+                        // Obtiene el numero de lineas del bloque si(-1 xq el si ya fue contado por numeroDeLinea)
+                        numLineaBloqueSi = bloqueIf.size() - 1;
                         // Manda a realizar el bloque si y verifica el resultado devuelto
                         if (condicionIf(bloqueIf)) {
+                            numeroDeLinea = (numLineaAbreSi + numLineaBloqueSi);
                             break;
                         } else {
                             return false;
@@ -264,7 +273,7 @@ public class Interprete {
         // Obtiene la linea de codigo del condicional if y seguidamente su condicion y aumenta una unidad el indiceBloque
         String codeLine = pBloqueIf.get(indiceBloque);
         String condicion = codeLine.substring(codeLine.indexOf("[") + 1, codeLine.length() - 1);
-        String condicionEvaluada = resolverEcuacion(condicion, 100);
+        String condicionEvaluada = resolverEcuacion(condicion);
 
         if (condicionEvaluada == null) {
             return false;
@@ -291,6 +300,8 @@ public class Interprete {
             return ejecutarCodigo(codigoSi);
             // resolver casos "osi" y "sino";
         } else {
+            // Cuenta cuandas lineas hay para luego verificar cuantas no se analizaron
+            int totalLineasIf = pBloqueIf.size();
             // Elimina el "si" del codigo
             pBloqueIf.remove(indiceBloque);
             String firstWord;
@@ -309,6 +320,8 @@ public class Interprete {
                 }
                 pBloqueIf.remove(indiceBloque);
             }
+            // Establece la linea por la que va ahora despues de que no se cumpliera la condicion del Si
+            numeroDeLinea += (totalLineasIf - pBloqueIf.size());
 
             if (firstWord.equals("sino")) {
                 // Cambia el sino por sino[verdad] para que se ejecute si o si
@@ -333,7 +346,7 @@ public class Interprete {
      */
     private boolean cicloRepitaCuando(String pCondicion, String pCodigo) {
         int numFirstLine = numeroDeLinea;
-        String respuestaCondicion = "";
+        String respuestaCondicion;
         // Aqui se ejecuta el codigo repetitivo
         do {
             // Vuelvo a poner el numero de linea en el inicio de ciclo repita
@@ -392,13 +405,16 @@ public class Interprete {
      * contrario
      */
     private boolean cicloPara(String pCondicion, String pCodigo) {
+        int numFirstLine = numeroDeLinea;
+        
         // Obtiene la condicion y la variable a la que se va a asignar el valor posterior
         String condicion = pCondicion.substring(0, pCondicion.indexOf("$")).trim();
         int posVariable = pCondicion.indexOf("$") + 1;
         String varAsignacion = pCondicion.substring(posVariable, pCondicion.indexOf("=", posVariable)).trim();
         String asignacion = pCondicion.substring(pCondicion.indexOf("=", posVariable) + 1).trim();
+        
         // Se evalua la condicion en busca de posibles errores (null)
-        String respuestaCondicion = resolverEcuacion(condicion, 100);
+        String respuestaCondicion = resolverEcuacion(condicion);
         if (respuestaCondicion == null) {
             return false;
         }
@@ -407,13 +423,15 @@ public class Interprete {
             // Manda a ejecutar el codigo del ciclo
             if (ejecutarCodigo(pCodigo) == false) {
                 return false;
-            }
+            }            
+            // Vuelvo a poner el numero de linea en el inicio de ciclo mientras
+            numeroDeLinea = numFirstLine;            
             // Realiza la asignacion y verifica que se haya realizado exitosamente
-            if (realizarAsignacion(asignacion, 100, varAsignacion) == false) {
+            if (realizarAsignacion(asignacion, varAsignacion) == false) {
                 return false;
             }
             // Se vuelve a verificar la condicion en caso de que cambie con respecto a una var
-            respuestaCondicion = resolverEcuacion(condicion, 100);
+            respuestaCondicion = resolverEcuacion(condicion);
             if (respuestaCondicion == null) {
                 return false;
             }
