@@ -15,9 +15,12 @@ public class Interprete {
 
     ListaSimpleVariables variables;
     ListaCircular errores;
+    int numeroDeLinea;
 
     /**
-     * Metodo utilizado para retornar la lista que almacena el flujo de ejecucion
+     * Metodo utilizado para retornar la lista que almacena el flujo de
+     * ejecucion
+     *
      * @return lista con el flujo de ejecucion
      */
     public ListaCircular getErrores() {
@@ -28,6 +31,7 @@ public class Interprete {
      * Metodo constructor
      */
     public Interprete() {
+        numeroDeLinea = 0;
         errores = new ListaCircular();
         variables = new ListaSimpleVariables();
     }
@@ -58,6 +62,7 @@ public class Interprete {
         String[] codeLines = pGiraCODE.split("\n");
         // Analiza cada linea
         for (int i = 0; i < codeLines.length; i++) {
+            numeroDeLinea++;
             // Elimina todos los espacios antes y despues de la linea de codigo
             String codeLine = codeLines[i].trim();
             // Verifica que la linea tenga texto
@@ -110,7 +115,7 @@ public class Interprete {
                     case "imprimir":
                         // Obtiene la parte del codigo a imprimir y quita espacio con trim()
                         nextWord = codeLine.substring(("imprimir").length(), codeLine.length() - 1).trim();
-                        if (this.imprimir(nextWord, i + 1)) {
+                        if (this.imprimir(nextWord)) {
                             break;
                         } else {
                             // Algo fallo al imprimir
@@ -175,6 +180,7 @@ public class Interprete {
                         String condicionMientras = codeLine.substring(codeLine.indexOf("[") + 1, codeLine.length() - 1).trim();
                         int mientrasAbiertos = 1;
                         String codigoMientras = "";
+                        int numLineasMientras = 0;
                         // Obtiene todo el bloque  mientras
                         while (mientrasAbiertos > 0) {
                             // Obtiene la primera palabra de la linea de codigo 
@@ -192,8 +198,11 @@ public class Interprete {
                                 }
                                 codigoMientras += codeLine + "\n";
                             }
+                            numLineasMientras++;
                         }
                         if (cicloMientras(condicionMientras, codigoMientras)) {
+                            // Asigna el numero de linea del final del ciclo
+                            numeroDeLinea += numLineasMientras;
                             break;
                         }
                         return false;
@@ -214,6 +223,8 @@ public class Interprete {
                             } else {
                                 if (primeraPalabra.equals("#cuando")) {
                                     repitaAbiertos--;
+                                }else if(codeLine.equals("")){
+                                     codeLine = " ";
                                 }
                                 codigoRepita += codeLine + "\n";
                             }
@@ -221,6 +232,7 @@ public class Interprete {
                         // Obtiene el codigo de la condicion
                         String condicionRepita = codeLine.substring(codeLine.indexOf("[") + 1, codeLine.length() - 1).trim();
                         if (cicloRepitaCuando(condicionRepita, codigoRepita)) {
+                            numeroDeLinea++;
                             break;
                         }
                         return false;
@@ -229,7 +241,7 @@ public class Interprete {
                         posNextWord = codeLine.indexOf("=") + ("=").length();
                         nextWord = codeLine.substring(posNextWord, codeLine.length() - 1).trim();
 
-                        if (this.realizarAsignacion(nextWord, i + 1, primeraPalabra)) {
+                        if (this.realizarAsignacion(nextWord, primeraPalabra)) {
                             break;
                         } else {
                             // Algo fallo (division por 0)
@@ -243,6 +255,7 @@ public class Interprete {
 
     /**
      * Metodo utilizado para realizar el condicional Si-Osi-Sino
+     *
      * @param pBloqueIf Bloque de codigo si
      * @return true si se ejecuto correctamente o false en caso contrario
      */
@@ -319,15 +332,18 @@ public class Interprete {
      * contrario
      */
     private boolean cicloRepitaCuando(String pCondicion, String pCodigo) {
+        int numFirstLine = numeroDeLinea;
         String respuestaCondicion = "";
         // Aqui se ejecuta el codigo repetitivo
         do {
+            // Vuelvo a poner el numero de linea en el inicio de ciclo repita
+            numeroDeLinea = numFirstLine;
             // Manda a ejecutar el codigo del ciclo
             if (ejecutarCodigo(pCodigo) == false) {
                 return false;
             }
             // Revisa y asigna el valor de la condicion
-            respuestaCondicion = resolverEcuacion(pCondicion, 100);
+            respuestaCondicion = resolverEcuacion(pCondicion);
             if (respuestaCondicion == null) {
                 return false;
             }
@@ -343,8 +359,9 @@ public class Interprete {
      * @return true si se logra ejecutar todo el ciclo o false en caso contrario
      */
     private boolean cicloMientras(String pCondicion, String pCodigo) {
+        int numFirstLine = numeroDeLinea;
         // Se envia a evaluar la condicion
-        String respuestaCondicion = resolverEcuacion(pCondicion, 100);
+        String respuestaCondicion = resolverEcuacion(pCondicion);
         if (respuestaCondicion == null) {
             return false;
         }
@@ -354,8 +371,11 @@ public class Interprete {
             if (ejecutarCodigo(pCodigo) == false) {
                 return false;
             }
+
+            // Vuelvo a poner el numero de linea en el inicio de ciclo mientras
+            numeroDeLinea = numFirstLine;
             // Vuelve a mandar la condicion para verificar el nuevo valor en caso que dependa de una variable
-            respuestaCondicion = resolverEcuacion(pCondicion, 100);
+            respuestaCondicion = resolverEcuacion(pCondicion);
             if (respuestaCondicion == null) {
                 return false;
             }
@@ -391,7 +411,7 @@ public class Interprete {
             // Realiza la asignacion y verifica que se haya realizado exitosamente
             if (realizarAsignacion(asignacion, 100, varAsignacion) == false) {
                 return false;
-            }            
+            }
             // Se vuelve a verificar la condicion en caso de que cambie con respecto a una var
             respuestaCondicion = resolverEcuacion(condicion, 100);
             if (respuestaCondicion == null) {
@@ -408,12 +428,12 @@ public class Interprete {
      * @param pNumeroLinea numero de linea, el cual se indica en caso de error
      * @return true si se imprime correctamente o false si ocurrio un error
      */
-    private boolean imprimir(String pLineaCodigo, int pNumeroLinea) {
-        String resultado = this.resolverEcuacion(pLineaCodigo, pNumeroLinea);
+    private boolean imprimir(String pLineaCodigo) {
+        String resultado = this.resolverEcuacion(pLineaCodigo);
         if (resultado == null) {
             return false;
         } else {
-            errores.insertar("Se imprimió: " + resultado);
+            errores.insertar(resultado);
             return true;
         }
     }
@@ -429,14 +449,14 @@ public class Interprete {
      * @return true si la asignacion se lleva a cabo con exito o false en caso
      * contrario
      */
-    private boolean realizarAsignacion(String pLineaCodigo, int pNumeroLinea, String pVariable) {
+    private boolean realizarAsignacion(String pLineaCodigo, String pVariable) {
         // Manda a realizar las posibles operaciones para obtener el dato unico a asignar
-        String resultado = this.resolverEcuacion(pLineaCodigo, pNumeroLinea);
+        String resultado = this.resolverEcuacion(pLineaCodigo);
         if (resultado == null) {
             return false;
         } else {
             variables.getVariable(pVariable).setValor(resultado);
-            errores.insertar("Se ha asignado a la variable '" + pVariable + "' el valor: " + resultado);
+////            errores.insertar("Se ha asignado a la variable '" + pVariable + "' el valor: " + resultado);
             return true;
         }
     }
@@ -450,7 +470,7 @@ public class Interprete {
      * @return retorna el valor resultante o null en caso que la ecuacion tenga
      * division por cero
      */
-    private String resolverEcuacion(String pExpresion, int pNumeroLinea) {
+    private String resolverEcuacion(String pExpresion) {
 
         String var1 = "";
         String var2 = "";
@@ -598,7 +618,7 @@ public class Interprete {
                         pilaParentesis.pop();
 
                         // Realizo la operacion
-                        var1 = realizarOperacion(var, tipoVar, operador, var1, tipoVar1, pNumeroLinea);
+                        var1 = realizarOperacion(var, tipoVar, operador, var1, tipoVar1);
                         // Verifica si hubo un error en la operacion
                         if (var1 == null) {
                             return null;
@@ -636,7 +656,7 @@ public class Interprete {
                 // Hay una operacion que realizar xq ya tengo dos expresiones y operador
                 if (!var2.equals("")) {
                     // Realizo la operacion
-                    var1 = realizarOperacion(var1, tipoVar1, operador, var2, tipoVar2, pNumeroLinea);
+                    var1 = realizarOperacion(var1, tipoVar1, operador, var2, tipoVar2);
                     // Verifica si hubo un error en la operacion
                     if (var1 == null) {
                         return null;
@@ -674,7 +694,7 @@ public class Interprete {
      * @param pLinea Numero de linea de codigo analizada
      * @return El resultado de la operacion o null si es division por 0
      */
-    private String realizarOperacion(String pVar1, String pTipo1, String pOperador, String pVar2, String pTipo2, int pLinea) {
+    private String realizarOperacion(String pVar1, String pTipo1, String pOperador, String pVar2, String pTipo2) {
         Double numero1;
         Double numero2;
         switch (pOperador) {
@@ -760,7 +780,7 @@ public class Interprete {
                     int num1 = Integer.parseInt(pVar1);
                     int num2 = Integer.parseInt(pVar2);
                     if (num2 == 0) {
-                        errores.insertar("Error en la linea " + pLinea + " al intentar dividir por 0");
+                        errores.insertar("Error en la linea " + numeroDeLinea + " al intentar dividir por 0");
                         return null;
                     } else {
                         return String.valueOf(num1 / num2);
@@ -769,7 +789,7 @@ public class Interprete {
                     numero1 = Double.parseDouble(pVar1);
                     numero2 = Double.parseDouble(pVar2);
                     if (numero2 == 0) {
-                        errores.insertar("Error en la linea " + pLinea + " al intentar dividir por 0");
+                        errores.insertar("Error en la linea " + numeroDeLinea + " al intentar dividir por 0");
                         return null;
                     } else {
                         return String.valueOf(numero1 / numero2);
@@ -779,11 +799,21 @@ public class Interprete {
                 if (pTipo1.equals("entero") && pTipo2.equals("entero")) {
                     int num1 = Integer.parseInt(pVar1);
                     int num2 = Integer.parseInt(pVar2);
-                    return String.valueOf(num1 % num2);
+                    if (num2 == 0) {
+                        errores.insertar("Error en la linea " + numeroDeLinea + " al realizar mod (%) por 0");
+                        return null;
+                    } else {
+                        return String.valueOf(num1 % num2);
+                    }
                 } else {
                     numero1 = Double.parseDouble(pVar1);
                     numero2 = Double.parseDouble(pVar2);
-                    return String.valueOf(numero1 % numero2);
+                    if (numero2 == 0) {
+                        errores.insertar("Error en la linea " + numeroDeLinea + " al realizar mod (%) por 0");
+                        return null;
+                    } else {
+                        return String.valueOf(numero1 % numero2);
+                    }
                 }
             case "+":
                 if (pTipo1.equals("Texto") || pTipo2.equals("Texto")

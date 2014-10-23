@@ -12,11 +12,13 @@ package Code;
 public class SyntaxChecker {
 
     private String salidaRevision = "";
+    boolean finalizado = false;
     private Pila pilaPalabrasReservadas;
     private ListaSimpleVariables variables;
 
     /**
      * Metodo para obtener el resultado de la revision del codigo
+     *
      * @return resultado de la revision de sintaxis del codigo
      */
     public String getSalidaRevision() {
@@ -34,6 +36,7 @@ public class SyntaxChecker {
 
     /**
      * Metodo utilizado para verificar la sintaxis del codigo
+     *
      * @param pCodigo codigo que se desea verificar
      */
     public void verificarCodigo(String pCodigo) {
@@ -64,6 +67,11 @@ public class SyntaxChecker {
                             // La palabra analizada es una palabra reservada
                             switch (palabraAnalizada) {
                                 case "programa":
+                                    if (finalizado) {
+                                        salidaRevision += "ERROR DE SINTAXIS en la linea " + (i + 1)
+                                                + ". No se pueden crear dos programas en un mismo archivo";
+                                        return;
+                                    }
                                     // Intento agregar la etiqueta de apertura del programa
                                     if (this.abrirPrograma(lineaAnalizada, j, (i + 1))) {
                                         break;
@@ -74,6 +82,7 @@ public class SyntaxChecker {
                                 case "#programa":
                                     // Intento agregar la etiqueta de cierre del programa
                                     if (this.cerrarPrograma(lineaAnalizada, j, (i + 1))) {
+                                        finalizado = true;
                                         break;
                                     } else {
                                         // Algo fallo al cerrar la etiqueta #programa. Sale de la compilacion
@@ -259,6 +268,13 @@ public class SyntaxChecker {
                         + ". No es posible crear variables sin antes abrir la etiqueta 'programa\n";
                 return false;
             } else {
+                // Verifica que no se puedan crear variables dentro de ciclos ni condicional 'si'
+                if (!pilaPalabrasReservadas.getValorEnTop().equals("programa")) {
+                    salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea
+                            + ". No es posible crear variables dentro de un ciclo o dentro de un 'si'\n";
+                    return false;
+                }
+
                 // Corta la linea de codigo, despues de el tipo de variable a crear
                 pLineaCodigo = pLineaCodigo.substring(pPosicionCaracter);
                 // Coloca espacios entre los caracteres especiales para este ejercicio

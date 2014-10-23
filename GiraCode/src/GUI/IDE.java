@@ -549,27 +549,40 @@ public class IDE extends javax.swing.JFrame {
         try {
             char letra;
             String palabra = "";
+            Style style = Txt_Editor.getStyle(StyleContext.DEFAULT_STYLE);
+            // Obtiene el codigo para comenzar a analizarlo
             String codigo = Txt_Editor.getDocument().getText(0, Txt_Editor.getDocument().getLength());
+            // Pinta todo el codigo de negro
+            Txt_Editor.getStyledDocument().setCharacterAttributes(0, codigo.length(), style, false);
+
             // Se recorre en busca de cada una de las palabras que componen el codigo
             for (int i = 0; i < codigo.length(); i++) {
                 letra = codigo.charAt(i);
-                if (letra == ' ' || letra == '\n' || letra == '\t' || letra == '[' || letra == ':' || letra == '!'
-                        || letra == ']' || letra == '=' || main.listaOperadores.esPalabraReservada(letra+"")) {
+
+                if (Character.isLetter(letra) || letra == '#') {
+                    palabra += letra;
+                } else if (letra == '@') {
+                    int posCierre = codigo.indexOf("@", i + 1);
+                    style = Txt_Output.getStyle("ok");
+                    // Verifica si no hay signo de cierre (-1) para pintar todo o solo una parte del codigo
+                    if (posCierre == -1) {
+                        Txt_Editor.getStyledDocument().setCharacterAttributes(i, codigo.length() - i, style, false);
+                        i = codigo.length();
+                    } else {
+                        Txt_Editor.getStyledDocument().setCharacterAttributes(i, posCierre - (i - 1), style, false);
+                        i = posCierre;
+                    }
+                    palabra = "";
+                } else {
                     if (!palabra.equals("")) {
                         if (main.palabrasReservadas.esPalabraReservada(palabra)) {
                             // Aqui se carga el formato
                             int posfirst = i - palabra.length();
-                            Style style = Txt_Editor.getStyle("reservada");
-                            Txt_Editor.getStyledDocument().setCharacterAttributes(posfirst, palabra.length(), style, false);
-                        } else {
-                            int posfirst = i - palabra.length();
-                            Style style = Txt_Editor.getStyle(StyleContext.DEFAULT_STYLE);
+                            style = Txt_Editor.getStyle("reservada");
                             Txt_Editor.getStyledDocument().setCharacterAttributes(posfirst, palabra.length(), style, false);
                         }
                     }
                     palabra = "";
-                } else {
-                    palabra += letra;
                 }
             }
         } catch (BadLocationException ex) {
@@ -651,7 +664,7 @@ public class IDE extends javax.swing.JFrame {
             // Agrega una nueva linea y un numero de linea mas
             numeroDeLineas++;
             Txt_NumeroLineas.setText(Txt_NumeroLineas.getText() + "\n" + numeroDeLineas);
-        }else if(evt.isControlDown() && (evt.getKeyCode() == KeyEvent.VK_X || evt.getKeyCode() == KeyEvent.VK_V)){
+        } else if (evt.isControlDown() && (evt.getKeyCode() == KeyEvent.VK_X || evt.getKeyCode() == KeyEvent.VK_V)) {
             // Se ha cambiado la cantidad de lineas xq se ha presionado ctrl+x o ctrl+v
             cargarNumeroDeLineas();
         }
