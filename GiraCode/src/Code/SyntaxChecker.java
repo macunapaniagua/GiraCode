@@ -627,12 +627,14 @@ public class SyntaxChecker {
                 }
                 return null;
             case "=":
-                if (pVar1.equals(pVar2)) {
+                if (pVar1.equals(pVar2) || (pVar1.equals("decimal") && pVar2.equals("entero")) 
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))) {
                     return "binario";
                 }
                 return null;
             case "<>":
-                if (pVar1.equals(pVar2)) {
+                if (pVar1.equals(pVar2) || (pVar1.equals("decimal") && pVar2.equals("entero")) 
+                        || (pVar1.equals("entero") && pVar2.equals("decimal"))) {
                     return "binario";
                 }
                 return null;

@@ -57,6 +57,12 @@ public class Interprete {
         return firstWord;
     }
 
+    /**
+     * Metodo utilizado para ejecutar un codigo GiraCODE
+     *
+     * @param pGiraCODE codigo a ejecutar
+     * @return true si la ejecucion fue correcta o false si hubo un error
+     */
     public boolean ejecutarCodigo(String pGiraCODE) {
         // Separa el codigo por lineas (\n)
         String[] codeLines = pGiraCODE.split("\n");
@@ -166,7 +172,7 @@ public class Interprete {
                                 ifAbiertos++;
                             } else if (primeraPalabra.equals("#si")) {
                                 ifAbiertos--;
-                            } else if(codeLine.equals("")){
+                            } else if (codeLine.equals("")) {
                                 codeLine = " ";
                             }
                             bloqueIf.add(codeLine);
@@ -232,8 +238,8 @@ public class Interprete {
                             } else {
                                 if (primeraPalabra.equals("#cuando")) {
                                     repitaAbiertos--;
-                                }else if(codeLine.equals("")){
-                                     codeLine = " ";
+                                } else if (codeLine.equals("")) {
+                                    codeLine = " ";
                                 }
                                 codigoRepita += codeLine + "\n";
                             }
@@ -406,13 +412,13 @@ public class Interprete {
      */
     private boolean cicloPara(String pCondicion, String pCodigo) {
         int numFirstLine = numeroDeLinea;
-        
+
         // Obtiene la condicion y la variable a la que se va a asignar el valor posterior
         String condicion = pCondicion.substring(0, pCondicion.indexOf("$")).trim();
         int posVariable = pCondicion.indexOf("$") + 1;
         String varAsignacion = pCondicion.substring(posVariable, pCondicion.indexOf("=", posVariable)).trim();
         String asignacion = pCondicion.substring(pCondicion.indexOf("=", posVariable) + 1).trim();
-        
+
         // Se evalua la condicion en busca de posibles errores (null)
         String respuestaCondicion = resolverEcuacion(condicion);
         if (respuestaCondicion == null) {
@@ -423,9 +429,9 @@ public class Interprete {
             // Manda a ejecutar el codigo del ciclo
             if (ejecutarCodigo(pCodigo) == false) {
                 return false;
-            }            
+            }
             // Vuelvo a poner el numero de linea en el inicio de ciclo mientras
-            numeroDeLinea = numFirstLine;            
+            numeroDeLinea = numFirstLine;
             // Realiza la asignacion y verifica que se haya realizado exitosamente
             if (realizarAsignacion(asignacion, varAsignacion) == false) {
                 return false;
@@ -729,16 +735,42 @@ public class Interprete {
                     return "falso";
                 }
             case "=":
-                if (pVar1.equals(pVar2)) {
-                    return "verdad";
-                } else {
-                    return "falso";
+                // Verifica si la comparacion es entre entero y decimal
+                if ((pTipo1.equals("decimal") && pTipo2.equals("entero"))
+                        || (pTipo1.equals("entero") && pTipo2.equals("decimal"))) {
+                    numero1 = Double.parseDouble(pVar1);
+                    numero2 = Double.parseDouble(pVar2);
+                    if (numero1.equals(numero2)) {
+                        return "verdad";
+                    } else {
+                        return "falso";
+                    }
+                } // La comparacion es entre iguales 
+                else {
+                    if (pVar1.equals(pVar2)) {
+                        return "verdad";
+                    } else {
+                        return "falso";
+                    }
                 }
             case "<>":
-                if (!pVar1.equals(pVar2)) {
-                    return "verdad";
-                } else {
-                    return "falso";
+                // Verifica si la comparacion es entre entero y decimal
+                if ((pTipo1.equals("decimal") && pTipo2.equals("entero"))
+                        || (pTipo1.equals("entero") && pTipo2.equals("decimal"))) {
+                    numero1 = Double.parseDouble(pVar1);
+                    numero2 = Double.parseDouble(pVar2);
+                    if (!numero1.equals(numero2)) {
+                        return "verdad";
+                    } else {
+                        return "falso";
+                    }
+                } // La comparacion es entre iguales 
+                else {
+                    if (!pVar1.equals(pVar2)) {
+                        return "verdad";
+                    } else {
+                        return "falso";
+                    }
                 }
             case "<":
                 numero1 = Double.parseDouble(pVar1);

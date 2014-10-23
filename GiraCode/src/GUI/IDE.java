@@ -429,13 +429,27 @@ public class IDE extends javax.swing.JFrame {
     private void Lbl_EjecutarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_EjecutarMouseClicked
         Interprete corrida = new Interprete();
         Document salida = Txt_Output.getDocument();
+        Document codigo = Txt_Editor.getDocument();
         try {
             // Limpia el campo de salida para una nueva ejecucion.
             salida.remove(0, salida.getLength());
-            // Ejecuta y escribe la salida del programa
-            corrida.ejecutarCodigo(Txt_Editor.getDocument().getText(0, Txt_Editor.getDocument().getLength()));
-            salida.insertString(0, corrida.getErrores().getDatos(), null);
-            salida.insertString(salida.getLength(), "Corrida exitosa", Txt_Output.getStyle("ok"));
+            // Ejecuta el programa
+            boolean exito = corrida.ejecutarCodigo(codigo.getText(0, codigo.getLength()));
+            // Si la ejecucion fue exitosa muestra la salida y un mensaje de exito, sino muestra la salida y el error
+            if (exito) {
+                salida.insertString(0, corrida.getErrores().getDatos(), null);
+                salida.insertString(salida.getLength(), "Corrida exitosa", Txt_Output.getStyle("ok"));
+            } else {
+                String resultado = corrida.getErrores().getDatos();
+                int posError = resultado.lastIndexOf("Error");
+                // Busca si habia codigo antes ejecutado perfectamente o si solo era el error
+                if (posError != -1) {
+                    salida.insertString(0, resultado.substring(0, posError), null);
+                    salida.insertString(salida.getLength(), resultado.substring(posError), Txt_Output.getStyle("fail"));
+                } else {
+                    salida.insertString(salida.getLength(), resultado, Txt_Output.getStyle("fail"));
+                }
+            }
         } catch (BadLocationException ex) {
         }
     }//GEN-LAST:event_Lbl_EjecutarMouseClicked
@@ -449,13 +463,18 @@ public class IDE extends javax.swing.JFrame {
     private void Lbl_CompilarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Lbl_CompilarMouseClicked
         Document documento = Txt_Editor.getDocument();
         try {
+            // Borra el texto que haya en la salida
+            Txt_Output.getDocument().remove(0, Txt_Output.getDocument().getLength());
             // Obtiene todo el codigo del Editor
             String codigo = documento.getText(0, documento.getLength());
+            // Verifica si no hay codigo en el editor y muestra un mensaje
+            if (codigo.trim().equals("")) {
+                Txt_Output.getDocument().insertString(0, "No hay código para verificar", Txt_Output.getStyle("fail"));
+                return;
+            }
             // Envia a revisar el codigo
             SyntaxChecker checker = new SyntaxChecker();
             checker.verificarCodigo(codigo);
-            // Borra el texto que haya en la salida
-            Txt_Output.getDocument().remove(0, Txt_Output.getDocument().getLength());
             // Pega la salida en la consola con el respectivo color de acuerdo al resultado obtenido
             if (checker.getSalidaRevision().equals("Compilación correcta\n")) {
                 Lbl_Ejecutar.setEnabled(true);
@@ -573,6 +592,17 @@ public class IDE extends javax.swing.JFrame {
                         i = posCierre;
                     }
                     palabra = "";
+                } else if (letra == '&') {
+                    style = Txt_Output.getStyle("ok");
+                    int posCierre = codigo.indexOf("&", i + 2);
+                    // Verifica si no hay signo de cierre (-1) para pintar todo o solo una parte del codigo
+                    if (posCierre == -1) {
+                        Txt_Editor.getStyledDocument().setCharacterAttributes(i, codigo.length() - i, style, false);
+                        i = codigo.length();
+                    } else {
+                        Txt_Editor.getStyledDocument().setCharacterAttributes(i, posCierre - (i - 1), style, false);
+                        i = posCierre;
+                    }
                 } else {
                     if (!palabra.equals("")) {
                         if (main.palabrasReservadas.esPalabraReservada(palabra)) {
