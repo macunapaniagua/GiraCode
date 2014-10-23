@@ -75,6 +75,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Img/Cargar.png"/>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Cargar C&#xf3;digo"/>
             <Property name="focusable" type="boolean" value="false"/>
           </Properties>
           <Events>
@@ -86,6 +87,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Img/Play.png"/>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Ejecutar"/>
             <Property name="enabled" type="boolean" value="false"/>
             <Property name="focusable" type="boolean" value="false"/>
           </Properties>
@@ -98,6 +100,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Img/Build.png"/>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Compilar"/>
             <Property name="focusable" type="boolean" value="false"/>
           </Properties>
           <Events>
@@ -109,6 +112,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Img/Guardar.png"/>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Guardar C&#xf3;digo"/>
             <Property name="focusable" type="boolean" value="false"/>
           </Properties>
           <Events>

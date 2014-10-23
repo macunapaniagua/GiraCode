@@ -122,6 +122,7 @@ public class IDE extends javax.swing.JFrame {
         Panel_Superior.setOpaque(false);
 
         Lbl_Cargar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Cargar.png"))); // NOI18N
+        Lbl_Cargar.setToolTipText("Cargar Código");
         Lbl_Cargar.setFocusable(false);
         Lbl_Cargar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -130,6 +131,7 @@ public class IDE extends javax.swing.JFrame {
         });
 
         Lbl_Ejecutar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Play.png"))); // NOI18N
+        Lbl_Ejecutar.setToolTipText("Ejecutar");
         Lbl_Ejecutar.setEnabled(false);
         Lbl_Ejecutar.setFocusable(false);
         Lbl_Ejecutar.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -139,6 +141,7 @@ public class IDE extends javax.swing.JFrame {
         });
 
         Lbl_Compilar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Build.png"))); // NOI18N
+        Lbl_Compilar.setToolTipText("Compilar");
         Lbl_Compilar.setFocusable(false);
         Lbl_Compilar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -147,6 +150,7 @@ public class IDE extends javax.swing.JFrame {
         });
 
         Lbl_Guardar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Guardar.png"))); // NOI18N
+        Lbl_Guardar.setToolTipText("Guardar Código");
         Lbl_Guardar.setFocusable(false);
         Lbl_Guardar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -549,7 +553,8 @@ public class IDE extends javax.swing.JFrame {
             // Se recorre en busca de cada una de las palabras que componen el codigo
             for (int i = 0; i < codigo.length(); i++) {
                 letra = codigo.charAt(i);
-                if (letra == ' ' || letra == '\n' || letra == '\t' || letra == '[' || letra == ':') {
+                if (letra == ' ' || letra == '\n' || letra == '\t' || letra == '[' || letra == ':' || letra == '!'
+                        || letra == ']' || letra == '=' || main.listaOperadores.esPalabraReservada(letra+"")) {
                     if (!palabra.equals("")) {
                         if (main.palabrasReservadas.esPalabraReservada(palabra)) {
                             // Aqui se carga el formato

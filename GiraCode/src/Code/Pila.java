@@ -35,7 +35,7 @@ public class Pila {
      * @param pDato dato que se va a insertar a la pila,
      */
     public void push(String pDato){
-        NodoSimple nuevoNodo = new NodoDoble(pDato);
+        NodoSimple nuevoNodo = new NodoSimple(pDato);
         push(nuevoNodo);
     }
 

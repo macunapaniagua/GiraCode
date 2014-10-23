@@ -6,7 +6,6 @@
 package Code;
 
 import java.util.ArrayList;
-import javax.swing.text.Document;
 
 /**
  *
@@ -247,7 +246,7 @@ public class Interprete {
      * @param pBloqueIf Bloque de codigo si
      * @return true si se ejecuto correctamente o false en caso contrario
      */
-    public boolean condicionIf(ArrayList<String> pBloqueIf) {
+    private boolean condicionIf(ArrayList<String> pBloqueIf) {
         int indiceBloque = 0;
         // Obtiene la linea de codigo del condicional if y seguidamente su condicion y aumenta una unidad el indiceBloque
         String codeLine = pBloqueIf.get(indiceBloque);
@@ -372,7 +371,7 @@ public class Interprete {
      * @return true si el resultado del ciclo fue exitoso o false en caso
      * contrario
      */
-    public boolean cicloPara(String pCondicion, String pCodigo) {
+    private boolean cicloPara(String pCondicion, String pCodigo) {
         // Obtiene la condicion y la variable a la que se va a asignar el valor posterior
         String condicion = pCondicion.substring(0, pCondicion.indexOf("$")).trim();
         int posVariable = pCondicion.indexOf("$") + 1;
@@ -409,7 +408,7 @@ public class Interprete {
      * @param pNumeroLinea numero de linea, el cual se indica en caso de error
      * @return true si se imprime correctamente o false si ocurrio un error
      */
-    public boolean imprimir(String pLineaCodigo, int pNumeroLinea) {
+    private boolean imprimir(String pLineaCodigo, int pNumeroLinea) {
         String resultado = this.resolverEcuacion(pLineaCodigo, pNumeroLinea);
         if (resultado == null) {
             return false;
@@ -430,7 +429,7 @@ public class Interprete {
      * @return true si la asignacion se lleva a cabo con exito o false en caso
      * contrario
      */
-    public boolean realizarAsignacion(String pLineaCodigo, int pNumeroLinea, String pVariable) {
+    private boolean realizarAsignacion(String pLineaCodigo, int pNumeroLinea, String pVariable) {
         // Manda a realizar las posibles operaciones para obtener el dato unico a asignar
         String resultado = this.resolverEcuacion(pLineaCodigo, pNumeroLinea);
         if (resultado == null) {
@@ -451,7 +450,7 @@ public class Interprete {
      * @return retorna el valor resultante o null en caso que la ecuacion tenga
      * division por cero
      */
-    public String resolverEcuacion(String pExpresion, int pNumeroLinea) {
+    private String resolverEcuacion(String pExpresion, int pNumeroLinea) {
 
         String var1 = "";
         String var2 = "";
@@ -656,7 +655,7 @@ public class Interprete {
      * @param pValor valor binario "falso" o "verdad"
      * @return la negacion de la expresion binaria
      */
-    public String operacionNo(String pValor) {
+    private String operacionNo(String pValor) {
         if (pValor.equals("verdad")) {
             return "falso";
         } else {
@@ -675,7 +674,7 @@ public class Interprete {
      * @param pLinea Numero de linea de codigo analizada
      * @return El resultado de la operacion o null si es division por 0
      */
-    public String realizarOperacion(String pVar1, String pTipo1, String pOperador, String pVar2, String pTipo2, int pLinea) {
+    private String realizarOperacion(String pVar1, String pTipo1, String pOperador, String pVar2, String pTipo2, int pLinea) {
         Double numero1;
         Double numero2;
         switch (pOperador) {
@@ -806,12 +805,12 @@ public class Interprete {
     /**
      * Metodo utilizado para obtener el tipo de dato que devuelve una operacion
      *
-     * @param pVar1 Tipo de variable 1
+     * @param pTipoVar1 Tipo de variable 1
      * @param pOperador Operador
-     * @param pVar2 Tipo de variable 2
+     * @param pTipoVar2 Tipo de variable 2
      * @return el tipo de dato que se obtiene al resolver la ecuacion
      */
-    public String getTipoResultante(String pVar1, String pOperador, String pVar2) {
+    private String getTipoResultante(String pTipoVar1, String pOperador, String pTipoVar2) {
         // Se va a retornar el tipo del valor si es correcta o null si es incorrecto
         switch (pOperador) {
             case "o":
@@ -831,33 +830,33 @@ public class Interprete {
             case ">=":
                 return "binario";
             case "-":
-                if ((pVar1.equals("entero") && pVar2.equals("entero"))) {
+                if ((pTipoVar1.equals("entero") && pTipoVar2.equals("entero"))) {
                     return "entero";
                 } else {
                     return "decimal";
                 }
             case "*":
-                if ((pVar1.equals("entero") && pVar2.equals("entero"))) {
+                if ((pTipoVar1.equals("entero") && pTipoVar2.equals("entero"))) {
                     return "entero";
                 } else {
                     return "decimal";
                 }
             case "/":
-                if ((pVar1.equals("entero") && pVar2.equals("entero"))) {
+                if ((pTipoVar1.equals("entero") && pTipoVar2.equals("entero"))) {
                     return "entero";
                 } else {
                     return "decimal";
                 }
             case "%":
-                if ((pVar1.equals("entero") && pVar2.equals("entero"))) {
+                if ((pTipoVar1.equals("entero") && pTipoVar2.equals("entero"))) {
                     return "entero";
                 } else {
                     return "decimal";
                 }
             case "+":
-                if (pVar1.equals("Texto") || pVar2.equals("Texto") || (pVar1.equals("caracter") && pVar2.equals("caracter"))) {
+                if (pTipoVar1.equals("Texto") || pTipoVar2.equals("Texto") || (pTipoVar1.equals("caracter") && pTipoVar2.equals("caracter"))) {
                     return "Texto";
-                } else if ((pVar1.equals("entero") && pVar2.equals("entero"))) {
+                } else if ((pTipoVar1.equals("entero") && pTipoVar2.equals("entero"))) {
                     return "entero";
                 } else {
                     return "decimal";

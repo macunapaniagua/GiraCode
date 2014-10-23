@@ -41,10 +41,10 @@ public class ListaCircular {
     /**
      * Metodo utilizado para insertar un elemento a la lista circular
      *
-     * @param pError error que se va a insertar en la lista circular
+     * @param pDato error que se va a insertar en la lista circular
      */
-    public void insertar(String pError) {
-        NodoDoble pNuevoNodo = new NodoDoble(pError);
+    public void insertar(String pDato) {
+        NodoDoble pNuevoNodo = new NodoDoble(pDato);
         insertar(pNuevoNodo);
     }
 
@@ -86,6 +86,10 @@ public class ListaCircular {
         }
     }
 
+    /**
+     * Metodo utilizado para obtener todos los datos de la lista en un solo Strin
+     * @return String con el contenido de la lista
+     */
     public String getDatos() {
         String respuesta = "";
         // Recorre la lista circular hacia atras

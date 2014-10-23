@@ -15,6 +15,10 @@ public class SyntaxChecker {
     private Pila pilaPalabrasReservadas;
     private ListaSimpleVariables variables;
 
+    /**
+     * Metodo para obtener el resultado de la revision del codigo
+     * @return resultado de la revision de sintaxis del codigo
+     */
     public String getSalidaRevision() {
         return salidaRevision;
     }
@@ -246,7 +250,7 @@ public class SyntaxChecker {
      * @return true si la sintaxis esta correcta o false en caso que haya
      * problemas
      */
-    public boolean crearVariable(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea, String pTipoVariable) {
+    private boolean crearVariable(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea, String pTipoVariable) {
         // Verifica si despues de Texto, entero... el caracter existente es ' ' o ':' 
         if (pLineaCodigo.charAt(pPosicionCaracter) == '\t' || pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == ':') {
             // Verifica si ya se abrio programa o en caso contrario la pila esta vacia
@@ -413,7 +417,7 @@ public class SyntaxChecker {
      * @return true si la sintaxis esta correcta o false en caso que haya
      * problemas
      */
-    public boolean abrirPrograma(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea) {
+    private boolean abrirPrograma(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea) {
         // Verifica si el caracter seguido de la palabra reservada es ' ', '[' o ':'
         if (pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == '\t') {
             // Verifica si ya existen palabras reservadas en la pila.
@@ -508,7 +512,7 @@ public class SyntaxChecker {
      * @return true si la sintaxis esta correcta o false en caso que haya
      * problemas
      */
-    public boolean cerrarPrograma(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea) {
+    private boolean cerrarPrograma(String pLineaCodigo, int pPosicionCaracter, int pNumeroLinea) {
         // Verifica que el caracter ubicado despues de #programa sea ' ' y no ':' o '['
         if (pLineaCodigo.charAt(pPosicionCaracter) == ' ' || pLineaCodigo.charAt(pPosicionCaracter) == '\t') {
             // Verifica si hay palabras reservadas en la pila, sino, no existe 'programa'
@@ -561,7 +565,7 @@ public class SyntaxChecker {
      * analizar
      * @return el numero de linea donde esta el caracter '!' o -1 si no existe
      */
-    public int getCierreLinea(String pCodigo, int pPosicionInicio) {
+    private int getCierreLinea(String pCodigo, int pPosicionInicio) {
         int ultimoChar = pCodigo.length() - 1;
         // Busca que exista el cierre de linea
         for (; ultimoChar > pPosicionInicio; ultimoChar--) {
@@ -577,7 +581,7 @@ public class SyntaxChecker {
     }
 
     // Metodo utilizado para obtener la posicion del ultimo ']' en una linea o -1 si no es el ultimo
-    public int getCierreCorchete(String pCodigo, int pPosicionInicio) {
+    private int getCierreCorchete(String pCodigo, int pPosicionInicio) {
         int ultimoChar = pCodigo.length() - 1;
         // Busca que exista el cierre de corchete
         for (; ultimoChar > pPosicionInicio; ultimoChar--) {
@@ -593,7 +597,7 @@ public class SyntaxChecker {
     }
 
     // Metodo utilizado para verificar el tipo de dato resultante en operacion entre dos tipos de datos
-    public String verificarOperacion(String pVar1, String pOperador, String pVar2) {
+    private String verificarOperacion(String pVar1, String pOperador, String pVar2) {
         // Se va a retornar el tipo del valor si es correcta o null si es incorrecto
         switch (pOperador) {
             case "o":
@@ -706,7 +710,7 @@ public class SyntaxChecker {
     }
 
     // Metodo utilizado para verificar que el operador 'no' sea utilizado con tipos de datos 'binario'
-    public String verificarNo(String pValor) {
+    private String verificarNo(String pValor) {
         if (pValor.equals("binario")) {
             return "binario";
         } else {
