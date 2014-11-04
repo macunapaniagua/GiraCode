@@ -96,7 +96,7 @@ public class ListaCircular {
         if (raiz != null) {
             NodoDoble recorrido = raiz;
             do {
-                respuesta += recorrido.getClave() + '\n';
+                respuesta += recorrido.getClave();
                 recorrido = (NodoDoble) recorrido.getSiguiente();
             } while (!recorrido.equals(raiz));
         }

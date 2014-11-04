@@ -136,8 +136,14 @@ public class SyntaxChecker {
                                         // Algo fallo al imprimir
                                         return;
                                     }
-//                                case "imprimirln":
-//                                    break;
+                                case "imprimirln":
+                                    // Intenta imprimir una linea
+                                    if (this.verificarImprimir(lineaAnalizada, j, i + 1)) {
+                                        break;
+                                    } else {
+                                        // Algo fallo al imprimir
+                                        return;
+                                    }
                                 case "si":
                                     // Verifica la condicion
                                     if (this.abrirSi(lineaAnalizada, j, i + 1)) {
@@ -627,13 +633,13 @@ public class SyntaxChecker {
                 }
                 return null;
             case "=":
-                if (pVar1.equals(pVar2) || (pVar1.equals("decimal") && pVar2.equals("entero")) 
+                if (pVar1.equals(pVar2) || (pVar1.equals("decimal") && pVar2.equals("entero"))
                         || (pVar1.equals("entero") && pVar2.equals("decimal"))) {
                     return "binario";
                 }
                 return null;
             case "<>":
-                if (pVar1.equals(pVar2) || (pVar1.equals("decimal") && pVar2.equals("entero")) 
+                if (pVar1.equals(pVar2) || (pVar1.equals("decimal") && pVar2.equals("entero"))
                         || (pVar1.equals("entero") && pVar2.equals("decimal"))) {
                     return "binario";
                 }
@@ -1663,21 +1669,22 @@ public class SyntaxChecker {
                     return false;
                 }
 
-                // Busca el separador de la condicion y la asignacion posterior del ciclo '$'
-                int posSeparador = pLineaCodigo.indexOf('$');
+                // Obtiene la expresion que se encuentra dentro del 'para[ expresion ]'
+                String condicionAsignacion = pLineaCodigo.substring(indiceApertura + 1, posCierre);
+                // Busca la posicion del separador '$'. Si no hay retorna -1
+                int posSeparador = getPosicionCharEnPara(condicionAsignacion, indiceApertura + 1, '$');
                 // Verifica que dentro de la condicion, se encuentre el caracter '$'
                 if (posSeparador == -1) {
                     salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". El caracter $ que separa la condicion y la asignacion posterior del ciclo 'para',"
+                            + ". El caracter $ que separa la condicion y la asignacion del ciclo 'para',"
                             + " no se ha encontrado\n";
                     return false;
                 }
 
                 // Obtiene la parte de la condicion del para (+1 xq es en la posicion siguiente del '[')
-                String condicion = pLineaCodigo.substring(indiceApertura + 1, posSeparador);
+                String condicion = pLineaCodigo.substring(indiceApertura + 1, posSeparador).trim();
                 // Envia a evaluar la condicion
                 String evaluacionCondicion = this.resolverEcuacion(condicion, pNumeroLinea);
-
                 if (evaluacionCondicion == null) {
                     return false;
                 } else if (!evaluacionCondicion.equals("binario")) {
@@ -1689,32 +1696,17 @@ public class SyntaxChecker {
                 // Obtengo la asignacion que se va a hacer depues de cada iteracion
                 String asignacionPosterior = pLineaCodigo.substring(posSeparador + 1, posCierre);
                 // Obtiene la posicion donde se encuentra el igual en la asignacion
-                int posIgual = asignacionPosterior.indexOf('=');
+                int posIgual = getPosicionCharEnPara(asignacionPosterior, posSeparador + 1, '=');
                 // Verifica que dentro de la asignacion, se encuentre el caracter '='
                 if (posIgual == -1) {
                     salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". No se ha encontrado una asignacion posterior '=' en el ciclo' para'\n";
+                            + ". No se ha encontrado el caracter '=' para la asignacion "
+                            + "posterior en el ciclo 'para'\n";
                     return false;
                 }
 
-                String variable = "";
-                // Busca el nombre de la variable que se encuentra antes del '='
-                asigna:
-                for (int firstLetter = 0; firstLetter < posIgual; firstLetter++) {
-                    if (asignacionPosterior.charAt(firstLetter) != ' ') {
-                        // Busca la ultima letra del nombre de la variable
-                        for (int lastLetter = posIgual - 1; lastLetter > firstLetter; lastLetter--) {
-                            if (asignacionPosterior.charAt(lastLetter) != ' ') {
-                                variable = asignacionPosterior.substring(firstLetter, lastLetter + 1);
-                                break asigna;
-                            }
-                        }
-                        variable = String.valueOf(asignacionPosterior.charAt(firstLetter));
-                        break;
-                    }
-                }
-
-                // Verifica que se le haya asignado un nombre a la variable
+                // Obtiene la variable a la que se le va a asignar un valor
+                String variable = pLineaCodigo.substring(posSeparador + 1, posIgual).trim();
                 if (variable.equals("")) {
                     salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
                             + ". No se ha especificado una variable antes del signo igual\n";
@@ -1724,20 +1716,19 @@ public class SyntaxChecker {
                 // Verifica si la variable de la asignacion posterior a la iteracion no se ha declarado aun
                 if (!variables.existeVariable(variable)) {
                     salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". La variable '" + variable + "' en la asignacion del 'para' no ha sido declarada\n";
+                            + ". No se reconoce '" + variable + "' como una variable.\n";
                     return false;
                 }
-
-                String asignacion = asignacionPosterior.substring(posIgual + 1);
+                // Obtiene la expresion de asignacion
+                String asignacion = pLineaCodigo.substring(posIgual + 1, posCierre).trim();
                 // Envia a evaluar la expresion que coincida con el mismo tipo de dato de la variable
                 evaluacionCondicion = this.resolverEcuacion(asignacion, pNumeroLinea);
-
                 // Verifica que la igualdad coincida con el tipo de dato de la variable
                 if (evaluacionCondicion == null) {
                     return false;
                 } else if (!evaluacionCondicion.equals(variables.getVariable(variable).getTipo())) {
                     salidaRevision += "ERROR DE SINTAXIS en la linea " + pNumeroLinea + ""
-                            + ". El tipo de dato que desea asignar en el 'para' despues de cada ciclo, no"
+                            + ". El tipo de dato que desea asignar a '" + variable + "' en el 'para', no"
                             + " coincide con el tipo de dato de la variable\n";
                     return false;
                 } else {
@@ -1798,4 +1789,32 @@ public class SyntaxChecker {
             return false;
         }
     }
+
+    /**
+     * Metodo utilizado para encontrar un caracter dado en la linea de codigo.
+     * Es util para encontrar el '$' o el '=' de la expresion del ciclo 'para'
+     *
+     * @param pExpresion Expresion del ciclo 'para'
+     * @return -1 si no aparecio o la posicion en la que se encuentra
+     * @param pPosicion Posicion actual del caracter de la linea
+     * @param pChar Caracter que se va a buscar
+     *
+     */
+    private int getPosicionCharEnPara(String pExpresion, int pPosicion, char pChar) {
+        boolean esTexto = false;
+        boolean esChar = false;
+        // Ciclo que busca la aparicion del caracter de separacion del 'para' '$',
+        // Ademas verifica que no este presente entre Texto o entre un Char
+        for (int i = 0; i < pExpresion.length(); i++) {
+            if (pExpresion.charAt(i) == pChar && !esTexto && !esChar) {
+                return i + pPosicion;
+            } else if (pExpresion.charAt(i) == '@') {
+                esTexto = !esTexto;
+            } else if (pExpresion.charAt(i) == '&') {
+                esChar = !esChar;
+            }
+        }
+        return -1;
+    }
+
 }

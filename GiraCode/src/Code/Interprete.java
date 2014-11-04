@@ -121,7 +121,16 @@ public class Interprete {
                     case "imprimir":
                         // Obtiene la parte del codigo a imprimir y quita espacio con trim()
                         nextWord = codeLine.substring(("imprimir").length(), codeLine.length() - 1).trim();
-                        if (this.imprimir(nextWord)) {
+                        if (this.imprimir(nextWord, false)) {
+                            break;
+                        } else {
+                            // Algo fallo al imprimir
+                            return false;
+                        }
+                    case "imprimirln":
+                        // Obtiene la parte del codigo a imprimir y quita espacio con trim()
+                        nextWord = codeLine.substring(("imprimirln").length(), codeLine.length() - 1).trim();
+                        if (this.imprimir(nextWord, true)) {
                             break;
                         } else {
                             // Algo fallo al imprimir
@@ -186,10 +195,6 @@ public class Interprete {
                         } else {
                             return false;
                         }
-
-////////                                case "imprimirln":
-////////                                    break;
-//////                    
                     case "mientras":
                         // Obtiene el codigo de la condicion y la asignacion posterior
                         String condicionMientras = codeLine.substring(codeLine.indexOf("[") + 1, codeLine.length() - 1).trim();
@@ -414,10 +419,12 @@ public class Interprete {
         int numFirstLine = numeroDeLinea;
 
         // Obtiene la condicion y la variable a la que se va a asignar el valor posterior
-        String condicion = pCondicion.substring(0, pCondicion.indexOf("$")).trim();
-        int posVariable = pCondicion.indexOf("$") + 1;
-        String varAsignacion = pCondicion.substring(posVariable, pCondicion.indexOf("=", posVariable)).trim();
-        String asignacion = pCondicion.substring(pCondicion.indexOf("=", posVariable) + 1).trim();
+        int pos$ = getPosicionCharEnPara(pCondicion, 0, '$');
+        String condicion = pCondicion.substring(0, pos$).trim();
+        String asignacion = pCondicion.substring(pos$ + 1);
+        int posIgual = getPosicionCharEnPara(asignacion, pos$ + 1, '=');
+        String varAsignacion = pCondicion.substring(pos$ + 1, posIgual).trim();
+        asignacion = pCondicion.substring(posIgual + 1).trim();
 
         // Se evalua la condicion en busca de posibles errores (null)
         String respuestaCondicion = resolverEcuacion(condicion);
@@ -452,12 +459,16 @@ public class Interprete {
      * @param pNumeroLinea numero de linea, el cual se indica en caso de error
      * @return true si se imprime correctamente o false si ocurrio un error
      */
-    private boolean imprimir(String pLineaCodigo) {
+    private boolean imprimir(String pLineaCodigo, boolean pConEnter) {
         String resultado = this.resolverEcuacion(pLineaCodigo);
         if (resultado == null) {
             return false;
         } else {
-            errores.insertar(resultado);
+            if (pConEnter) {
+                errores.insertar(resultado + "\n");
+            } else {
+                errores.insertar(resultado);
+            }
             return true;
         }
     }
@@ -830,7 +841,7 @@ public class Interprete {
                     int num1 = Integer.parseInt(pVar1);
                     int num2 = Integer.parseInt(pVar2);
                     if (num2 == 0) {
-                        errores.insertar("Error en la linea " + numeroDeLinea + " al intentar dividir por 0");
+                        errores.insertar("\nError en la linea " + numeroDeLinea + " al intentar dividir por 0");
                         return null;
                     } else {
                         return String.valueOf(num1 / num2);
@@ -839,7 +850,7 @@ public class Interprete {
                     numero1 = Double.parseDouble(pVar1);
                     numero2 = Double.parseDouble(pVar2);
                     if (numero2 == 0) {
-                        errores.insertar("Error en la linea " + numeroDeLinea + " al intentar dividir por 0");
+                        errores.insertar("\nError en la linea " + numeroDeLinea + " al intentar dividir por 0");
                         return null;
                     } else {
                         return String.valueOf(numero1 / numero2);
@@ -850,7 +861,7 @@ public class Interprete {
                     int num1 = Integer.parseInt(pVar1);
                     int num2 = Integer.parseInt(pVar2);
                     if (num2 == 0) {
-                        errores.insertar("Error en la linea " + numeroDeLinea + " al realizar mod (%) por 0");
+                        errores.insertar("\nError en la linea " + numeroDeLinea + " al realizar mod (%) por 0");
                         return null;
                     } else {
                         return String.valueOf(num1 % num2);
@@ -859,7 +870,7 @@ public class Interprete {
                     numero1 = Double.parseDouble(pVar1);
                     numero2 = Double.parseDouble(pVar2);
                     if (numero2 == 0) {
-                        errores.insertar("Error en la linea " + numeroDeLinea + " al realizar mod (%) por 0");
+                        errores.insertar("\nError en la linea " + numeroDeLinea + " al realizar mod (%) por 0");
                         return null;
                     } else {
                         return String.valueOf(numero1 % numero2);
@@ -945,4 +956,30 @@ public class Interprete {
         return null;
     }
 
+    /**
+     * Metodo utilizado para encontrar un caracter dado en la linea de codigo.
+     * Es util para encontrar el '$' o el '=' de la expresion del ciclo 'para'
+     *
+     * @param pExpresion Expresion del ciclo 'para'
+     * @param pPosicion Posicion actual del caracter de la linea
+     * @param pChar Caracter que se va a buscar
+     * @return la posicion en la que se encuentra
+     *
+     */
+    private int getPosicionCharEnPara(String pExpresion, int pPosicion, char pChar) {
+        boolean esTexto = false;
+        boolean esChar = false;
+        // Ciclo que busca la aparicion del caracter de separacion del 'para' '$',
+        // Ademas verifica que no este presente entre Texto o entre un Char
+        for (int i = 0; i < pExpresion.length(); i++) {
+            if (pExpresion.charAt(i) == pChar && !esTexto && !esChar) {
+                return i + pPosicion;
+            } else if (pExpresion.charAt(i) == '@') {
+                esTexto = !esTexto;
+            } else if (pExpresion.charAt(i) == '&') {
+                esChar = !esChar;
+            }
+        }
+        return -1;
+    }
 }

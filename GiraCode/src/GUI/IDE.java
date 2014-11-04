@@ -438,7 +438,7 @@ public class IDE extends javax.swing.JFrame {
             // Si la ejecucion fue exitosa muestra la salida y un mensaje de exito, sino muestra la salida y el error
             if (exito) {
                 salida.insertString(0, corrida.getErrores().getDatos(), null);
-                salida.insertString(salida.getLength(), "Corrida exitosa", Txt_Output.getStyle("ok"));
+                salida.insertString(salida.getLength(), "\nCorrida exitosa", Txt_Output.getStyle("ok"));
             } else {
                 String resultado = corrida.getErrores().getDatos();
                 int posError = resultado.lastIndexOf("Error");

@@ -36,7 +36,7 @@ public class main {
         palabrasReservadas.insertarAlInicio("caracter", "char");
         palabrasReservadas.insertarAlInicio("binario", "boolean");
         // Imprimir
-    //    palabrasReservadas.insertarAlFinal("imprimirln", "System.out.println");
+        palabrasReservadas.insertarAlFinal("imprimirln", "System.out.println");
         palabrasReservadas.insertarAlInicio("imprimir", "System.out.print");
         // Condicional If
         palabrasReservadas.insertarAlInicio("si", "if");
