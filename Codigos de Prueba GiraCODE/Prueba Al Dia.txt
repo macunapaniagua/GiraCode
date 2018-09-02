@@ -1,0 +1,9 @@
+programa mario
+
+Texto::var!
+
+var = @s @ + no[verdad] + & & + [25*[39-6]]!
+
+imprimir var!
+
+#programa

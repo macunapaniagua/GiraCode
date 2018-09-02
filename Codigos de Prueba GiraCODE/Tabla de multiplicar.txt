@@ -1,0 +1,13 @@
+programa mario
+
+entero::var!
+
+var = 1!
+
+para[var<=10 $ var =var+1]
+
+	imprimir 5 + @x@ + var + @ = @ + [5*var]!
+	
+#para
+
+#programa

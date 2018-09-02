@@ -1,0 +1,10 @@
+programa sda
+
+entero::sd!
+Texto::el!
+
+El = 12!
+sd = [25+2]-45*3!
+sd = -2!
+
+#programa

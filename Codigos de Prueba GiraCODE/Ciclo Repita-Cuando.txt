@@ -1,0 +1,16 @@
+programa mario
+
+entero::num!
+num = 5!
+
+repita
+	imprimir num!
+	si[num%2 =0]
+		imprimir @Par@!
+	sino
+		imprimir @Impar@!
+	#si
+	num = num - 1!	
+#cuando[num>5]
+
+#programa

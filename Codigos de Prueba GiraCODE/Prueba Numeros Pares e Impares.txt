@@ -1,0 +1,16 @@
+programa mario
+
+entero::numero!
+numero = 1!
+
+para[numero<=10 $ numero = numero +1]
+
+	si[numero%2 = 0]
+		imprimir @El numero @ + numero + @ es par@!
+	sino
+		imprimir @El numero @ + numero + @ es impar@!
+	#si
+	
+#para
+
+#programa

@@ -1,0 +1,18 @@
+programa mario
+
+entero::num!
+num = 5!
+
+mientras[num>0]
+
+	imprimir num!
+	mientras[num % 2 = 0]
+
+		imprimir num!
+		num = num -1!
+	
+	#mientras
+	num = num - 1!	
+#mientras
+
+#programa

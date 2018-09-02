@@ -1,0 +1,33 @@
+programa mario
+
+Texto::var!
+entero::num!
+
+num = 1!
+var = @s @ + no[verdad] + & & + [25*[39-6]]!
+
+si[num = 5]
+	imprimir @Hola mundo@!
+	si[num = 5]
+		imprimir @Hola mundo@!
+		imprimir @Hola mundo@!
+	#si
+sino
+	imprimir @Hola mundo@!	
+#si
+
+para[verdad $ var = @d@]
+
+	imprimir var!
+	imprimir var!
+	imprimir var!
+
+	para[verdad $ var = @d@]
+
+		imprimir var!
+	
+	#para
+	
+#para
+
+#programa

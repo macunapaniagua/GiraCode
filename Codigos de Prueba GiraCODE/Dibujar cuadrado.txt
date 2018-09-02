@@ -1,0 +1,19 @@
+programa sd
+
+entero::i!
+entero::j!
+j = 1!
+i= 1!
+
+para [ j<=5 $ j = j+1 ]
+
+	para [  i<= 5 $ i = i+1 ]
+		imprimir @  *  @!
+	#para
+	imprimirln & &!
+	i = 1!
+
+#para
+
+
+#programa 

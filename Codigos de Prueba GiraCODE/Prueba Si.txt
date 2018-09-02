@@ -1,0 +1,18 @@
+programa mario
+
+entero::num!
+
+num = 1!
+
+si[num = 1.0]
+	imprimir @Igual@!
+	si[num <= 5]
+		imprimir @Menor o Igual@!
+	sino
+		imprimir @Mayor@!
+	#si
+sino
+	imprimir @Diferente@!
+#si
+
+#programa  
